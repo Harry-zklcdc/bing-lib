@@ -25,6 +25,11 @@ type Image struct {
 	BingBaseUrl string
 }
 
+type Message struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
 type ChatHub struct {
 	style   string
 	chatReq ChatReq

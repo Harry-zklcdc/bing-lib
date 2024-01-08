@@ -98,9 +98,19 @@ func (chat *Chat) NewConversation() error {
 	return nil
 }
 
-func (chat *Chat) MsgComposer(msg string) string {
-	// TODO
-	return ""
+func (chat *Chat) MsgComposer(msgs []Message) (prompt string, msg string) {
+	for _, t := range msgs {
+		switch t.Role {
+		case "system":
+			prompt += t.Content
+		case "user":
+			msg += "`me`:\n" + t.Content + "\n"
+		case "assistant":
+			msg += "`you`:\n" + t.Content + "\n"
+		}
+	}
+	msg += "`you:`"
+	return prompt, msg
 }
 
 func (chat *Chat) optionsSetsHandler() []string {

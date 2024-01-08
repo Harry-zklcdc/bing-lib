@@ -1,0 +1,23 @@
+package binglib_test
+
+import (
+	"testing"
+
+	binglib "github.com/Harry-zklcdc/bing-lib"
+)
+
+const cookieImg = "Complete cookie"
+
+func TestImage(t *testing.T) {
+	i := binglib.NewImage(cookieImg)
+	imgs, id, err := i.Image("猫", 4)
+
+	t.Log("id: ", id)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	t.Log(imgs)
+}

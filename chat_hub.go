@@ -1,8 +1,8 @@
 package binglib
 
-func newChatHub(hatReq ChatReq) *ChatHub {
+func newChatHub(chatReq ChatReq) *ChatHub {
 	return &ChatHub{
-		chatReq: hatReq,
+		chatReq: chatReq,
 		style:   CREATIVE,
 	}
 }

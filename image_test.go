@@ -10,7 +10,7 @@ const cookieImg = "Complete cookie"
 
 func TestImage(t *testing.T) {
 	i := binglib.NewImage(cookieImg)
-	imgs, id, err := i.Image("猫", 4)
+	imgs, id, err := i.Image("猫")
 
 	t.Log("id: ", id)
 

@@ -145,7 +145,7 @@ func imageHandler(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(resqB, &resq)
 
 	image := binglib.NewImage(cookie)
-	imgs, _, err := image.Image(resq.Prompt, resq.N)
+	imgs, _, err := image.Image(resq.Prompt)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println(r.RemoteAddr, r.Method, r.URL, "500")

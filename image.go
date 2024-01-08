@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	bingImageCreateUrl = "https://%s/images/create?q=%s&rt=%d&FORM=GENCRE"
+	bingImageCreateUrl = "https://%s/images/create?q=%s&rt=4&FORM=GENCRE"
 	bingImageResult    = "https://%s/images/create/async/results/%s"
 )
 
@@ -40,11 +40,11 @@ func (image *Image) GetCookies() string {
 	return image.cookies
 }
 
-func (image *Image) Image(q string, rt int) ([]string, string, error) {
+func (image *Image) Image(q string) ([]string, string, error) {
 	var res []string
 
 	c := request.NewRequest()
-	c.Post().SetUrl(bingImageCreateUrl, image.BingBaseUrl, url.QueryEscape(q), rt).
+	c.Post().SetUrl(bingImageCreateUrl, image.BingBaseUrl, url.QueryEscape(q)).
 		SetBody(strings.NewReader(url.QueryEscape(fmt.Sprintf("q=%s&qs=ds", q)))).
 		SetContentType("application/x-www-form-urlencoded").
 		SetHeader("Cookie", image.cookies).

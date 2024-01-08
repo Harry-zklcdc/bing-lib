@@ -14,7 +14,7 @@ var cookie = os.Getenv("COOKIE")
 */
 func main() {
 	i := binglib.NewImage(cookie)
-	imgs, id, err := i.Image("猫", 4) // 生成 4 张图片
+	imgs, id, err := i.Image("猫") // 生成 4 张图片
 	if err != nil {
 		panic(err)
 	}

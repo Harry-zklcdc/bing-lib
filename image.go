@@ -83,7 +83,7 @@ func (image *Image) Image(q string) ([]string, string, error) {
 
 	var tmp []string
 	for i := range res {
-		if !strings.HasPrefix(res[i], "/rp/") {
+		if !strings.Contains(res[i], "/rp/") {
 			tmp = append(tmp, res[i])
 		}
 	}

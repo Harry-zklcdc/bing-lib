@@ -384,8 +384,15 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 			} else if resp.Type == 1 {
 				if len(resp.Arguments) > 0 {
 					if len(resp.Arguments[0].Messages) > 0 {
+						if resp.Arguments[0].Messages[0].MessageType == "InternalSearchResult" {
+							tmp = t[1]
+							continue
+						}
 						if len(resp.Arguments[0].Messages[0].Text) > len(text) {
 							c <- strings.ReplaceAll(resp.Arguments[0].Messages[0].Text, text, "")
+							if resp.Arguments[0].Messages[0].MessageType == "InternalSearchQuery" {
+								c <- "\n"
+							}
 						}
 						text = resp.Arguments[0].Messages[0].Text
 						// fmt.Println(resp.Arguments[0].Messages[0].Text + "\n\n")

@@ -104,9 +104,9 @@ func (chat *Chat) MsgComposer(msgs []Message) (prompt string, msg string) {
 		case "system":
 			prompt += t.Content
 		case "user":
-			msg += "`me`:\n" + t.Content + "\n"
+			msg += "`me`:\n" + t.Content + "\n\n"
 		case "assistant":
-			msg += "`you`:\n" + t.Content + "\n"
+			msg += "`you`:\n" + t.Content + "\n\n"
 		}
 	}
 	msg += "`you:`"

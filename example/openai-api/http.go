@@ -16,6 +16,8 @@ var (
 	cookie        = os.Getenv("COOKIE")
 	bingBaseUrl   = os.Getenv("BING_BASE_URL")
 	sydneyBaseUrl = os.Getenv("SYDNEY_BASE_URL")
+
+	apikey = os.Getenv("APIKEY")
 )
 
 var STOPFLAG = "stop"
@@ -24,6 +26,14 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
+	}
+
+	if apikey != "" {
+		if r.Header.Get("Authorization") != "Bearer "+apikey {
+			w.WriteHeader(http.StatusUnauthorized)
+			log.Println(r.RemoteAddr, r.Method, r.URL, "401")
+			return
+		}
 	}
 
 	resqB, err := io.ReadAll(r.Body)
@@ -149,6 +159,14 @@ func imageHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		log.Println(r.RemoteAddr, r.Method, r.URL, "500")
 		return
+	}
+
+	if apikey != "" {
+		if r.Header.Get("Authorization") != "Bearer "+apikey {
+			w.WriteHeader(http.StatusUnauthorized)
+			log.Println(r.RemoteAddr, r.Method, r.URL, "401")
+			return
+		}
 	}
 
 	resqB, err := io.ReadAll(r.Body)

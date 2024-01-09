@@ -11,7 +11,7 @@ type chatRequest struct {
 type chatResponse struct {
 	Id                string    `json:"id"`
 	Object            string    `json:"object"`
-	Create            int       `json:"created"`
+	Create            int64     `json:"created"`
 	Model             string    `json:"model"`
 	SystemFingerprint string    `json:"system_fingerprint"`
 	Choices           []choices `json:"choices"`
@@ -22,7 +22,7 @@ type choices struct {
 	Delta        []binglib.Message `json:"delta,omitempty"`
 	Message      binglib.Message   `json:"message,omitempty"`
 	Logprobs     string            `json:"logprobs,omitempty"`
-	FinishReason string            `json:"finish_reason,omitempty"`
+	FinishReason *string           `json:"finish_reason"`
 }
 
 type imageRequest struct {
@@ -32,7 +32,7 @@ type imageRequest struct {
 }
 
 type imageResponse struct {
-	Created int         `json:"created"`
+	Created int64       `json:"created"`
 	Data    []imageData `json:"data"`
 }
 

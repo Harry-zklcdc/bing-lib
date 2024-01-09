@@ -18,11 +18,11 @@ type chatResponse struct {
 }
 
 type choices struct {
-	Index        int               `json:"index"`
-	Delta        []binglib.Message `json:"delta,omitempty"`
-	Message      binglib.Message   `json:"message,omitempty"`
-	Logprobs     string            `json:"logprobs,omitempty"`
-	FinishReason *string           `json:"finish_reason"`
+	Index        int             `json:"index"`
+	Delta        binglib.Message `json:"delta,omitempty"`
+	Message      binglib.Message `json:"message,omitempty"`
+	Logprobs     string          `json:"logprobs,omitempty"`
+	FinishReason *string         `json:"finish_reason"`
 }
 
 type imageRequest struct {

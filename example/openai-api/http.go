@@ -85,16 +85,14 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 			resp.Choices = []choices{
 				{
 					Index: 0,
-					Delta: []binglib.Message{
-						{
-							Role:    "assistant",
-							Content: tmp,
-						},
+					Delta: binglib.Message{
+						// Role:    "assistant",
+						Content: tmp,
 					},
 				},
 			}
 			if tmp == "EOF" {
-				resp.Choices[0].Delta[0].Content = ""
+				resp.Choices[0].Delta.Content = ""
 				resp.Choices[0].FinishReason = &STOPFLAG
 				resData, err := json.Marshal(resp)
 				if err != nil {

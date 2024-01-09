@@ -18,6 +18,8 @@ var (
 	sydneyBaseUrl = os.Getenv("SYDNEY_BASE_URL")
 )
 
+var STOPFLAG = "stop"
+
 func chatHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -60,33 +62,47 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 		Object:            "chat.completion.chunk",
 		SystemFingerprint: hex.NewHex(12),
 		Model:             resq.Model,
-		Create:            time.Now().Second(),
+		Create:            time.Now().Unix(),
 	}
 
 	if resq.Stream {
+		flusher, ok := w.(http.Flusher)
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.WriteHeader(http.StatusOK)
+		flusher.Flush()
+
 		text := make(chan string)
 		go chat.ChatStream(prompt, msg, text)
 		var tmp string
 
 		for {
 			tmp = <-text
-			resp.Choices = append(resp.Choices, choices{
-				Index: 0,
-				Delta: []binglib.Message{
-					{
-						Role:    "assistant",
-						Content: tmp,
+			resp.Choices = []choices{
+				{
+					Index: 0,
+					Delta: []binglib.Message{
+						{
+							Role:    "assistant",
+							Content: tmp,
+						},
 					},
 				},
-			})
+			}
 			if tmp == "EOF" {
-				resp.Choices[0].FinishReason = "stop"
+				resp.Choices[0].Delta[0].Content = ""
+				resp.Choices[0].FinishReason = &STOPFLAG
 				resData, err := json.Marshal(resp)
 				if err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
 					log.Println(r.RemoteAddr, r.Method, r.URL, "500")
 					return
 				}
+				w.Write([]byte("data: "))
 				w.Write(resData)
 				break
 			}
@@ -96,7 +112,10 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 				log.Println(r.RemoteAddr, r.Method, r.URL, "500")
 				return
 			}
-			w.Write(append(resData, []byte("\n\n")...))
+			w.Write([]byte("data: "))
+			w.Write(resData)
+			w.Write([]byte("\n\n"))
+			flusher.Flush()
 		}
 	} else {
 		text, err := chat.Chat(prompt, msg)
@@ -112,7 +131,7 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 				Role:    "assistant",
 				Content: text,
 			},
-			FinishReason: "stop",
+			FinishReason: &STOPFLAG,
 		})
 
 		resData, err := json.Marshal(resp)
@@ -153,7 +172,7 @@ func imageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := imageResponse{
-		Created: time.Now().Second(),
+		Created: time.Now().Unix(),
 	}
 	for _, img := range imgs {
 		resp.Data = append(resp.Data, imageData{

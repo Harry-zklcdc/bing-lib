@@ -84,7 +84,7 @@ func (image *Image) Image(q string) ([]string, string, error) {
 	var tmp []string
 	for i := range res {
 		if !strings.Contains(res[i], "/rp/") {
-			tmp = append(tmp, res[i])
+			tmp = append(tmp, strings.ReplaceAll(strings.ReplaceAll(res[i], "w=270", "w=1024"), "h=270", "h=1024"))
 		}
 	}
 

@@ -154,4 +154,11 @@ type ResponsePayload struct {
 			ServiceVersion string `json:"serviceVersion"`
 		} `json:"result"`
 	} `json:"arguments,omitempty"`
+	Item struct {
+		Result struct {
+			Value          string `json:"value"`
+			Message        string `json:"message"`
+			ServiceVersion string `json:"serviceVersion"`
+		} `json:"result"`
+	} `json:"item,omitempty"`
 }

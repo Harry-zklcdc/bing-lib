@@ -380,6 +380,9 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 			tmp += t[0]
 			json.Unmarshal([]byte(tmp), &resp)
 			if resp.Type == 2 {
+				if resp.Item.Result.Value == "CaptchaChallenge" {
+					c <- "User needs to solve CAPTCHA to continue."
+				}
 				break
 			} else if resp.Type == 1 {
 				if len(resp.Arguments) > 0 {

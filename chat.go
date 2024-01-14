@@ -3,12 +3,13 @@ package binglib
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/Harry-zklcdc/bing-lib/lib/hex"
 	"github.com/Harry-zklcdc/bing-lib/lib/request"
-	"golang.org/x/net/websocket"
+	"github.com/gorilla/websocket"
 )
 
 const (
@@ -259,35 +260,33 @@ func (chat *Chat) requestPayloadHandler(msg string, optionsSets []string, plugin
 }
 
 func (chat *Chat) wsHandler(data map[string]any) (*websocket.Conn, error) {
-	wsConfig, _ := websocket.NewConfig(fmt.Sprintf(sydneyChatHubUrl, chat.SydneyBaseUrl, url.QueryEscape(chat.GetChatHub().GetEncryptedConversationSignature())), "https://"+chat.BingBaseUrl)
-	wsConfig.Header.Add("Accept-Encoding", "gzip, deflate, br")
-	wsConfig.Header.Add("Accept-Language", "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7")
-	wsConfig.Header.Add("User-Agent", userAgent)
-	wsConfig.Header.Add("Upgrade", "websocket")
-	wsConfig.Header.Add("Connection", "Upgrade")
-	wsConfig.Header.Add("Host", "sydney.bing.com")
-	wsConfig.Header.Add("Origin", "https://www.bing.com")
-	// wsConfig.Header.Add("Sec-Websocket-Extensions", "permessage-deflate; client_max_window_bits")
-	wsConfig.Header.Add("Sec-WebSocket-Version", "13")
+	dialer := websocket.DefaultDialer
+	dialer.Proxy = http.ProxyFromEnvironment
+	headers := http.Header{}
+	headers.Add("Accept-Encoding", "gzip, deflate, br")
+	headers.Add("Accept-Language", "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7")
+	headers.Add("User-Agent", userAgent)
+	if chat.GetSydneyBaseUrl() == sydneyBaseUrl {
+		headers.Add("Host", "sydney.bing.com")
+		headers.Add("Origin", "https://www.bing.com")
+	}
 
-	ws, err := websocket.DialConfig(wsConfig)
+	ws, _, err := dialer.Dial(fmt.Sprintf(sydneyChatHubUrl, chat.SydneyBaseUrl, url.QueryEscape(chat.GetChatHub().GetEncryptedConversationSignature())), headers)
 	if err != nil {
 		return nil, err
 	}
 
-	var buf = make([]byte, 1024)
-
-	_, err = ws.Write([]byte("{\"protocol\":\"json\",\"version\":1}" + spilt))
+	err = ws.WriteMessage(websocket.TextMessage, []byte("{\"protocol\":\"json\",\"version\":1}"+spilt))
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = ws.Read(buf)
+	_, _, err = ws.ReadMessage()
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = ws.Write([]byte("{\"type\":6}" + spilt))
+	err = ws.WriteMessage(websocket.TextMessage, []byte("{\"type\":6}"+spilt))
 	if err != nil {
 		return nil, err
 	}
@@ -296,7 +295,7 @@ func (chat *Chat) wsHandler(data map[string]any) (*websocket.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = ws.Write(append(req, []byte(spilt)...))
+	err = ws.WriteMessage(websocket.TextMessage, append(req, []byte(spilt)...))
 	if err != nil {
 		return nil, err
 	}
@@ -316,36 +315,28 @@ func (chat *Chat) Chat(prompt, msg string) (string, error) {
 	}
 	defer ws.Close()
 
-	buf := make([]byte, 1024)
-	tmp := ""
 	text := ""
 	var resp ResponsePayload
 
 	for {
-		n, err := ws.Read(buf)
+		err = ws.ReadJSON(&resp)
 		if err != nil {
 			if err.Error() != "EOF" {
 				return "", err
 			}
 		}
-		if strings.Contains(string(buf[:n]), "\x1e") {
-			t := strings.Split(string(buf[:n]), "\x1e")
-			tmp += t[0]
-			json.Unmarshal([]byte(tmp), &resp)
-			if resp.Type == 2 {
-				break
-			} else if resp.Type == 1 {
-				if len(resp.Arguments) > 0 {
-					if len(resp.Arguments[0].Messages) > 0 {
-						text = resp.Arguments[0].Messages[0].Text
-						// fmt.Println(resp.Arguments[0].Messages[0].Text + "\n\n")
-					}
+		if resp.Type == 2 {
+			if resp.Item.Result.Value == "CaptchaChallenge" {
+				text = "User needs to solve CAPTCHA to continue."
+			}
+			break
+		} else if resp.Type == 1 {
+			if len(resp.Arguments) > 0 {
+				if len(resp.Arguments[0].Messages) > 0 {
+					text = resp.Arguments[0].Messages[0].Text
+					// fmt.Println(resp.Arguments[0].Messages[0].Text + "\n\n")
 				}
 			}
-
-			tmp = t[1]
-		} else {
-			tmp += string(buf[:n])
 		}
 	}
 
@@ -364,49 +355,38 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 	}
 	defer ws.Close()
 
-	buf := make([]byte, 1024)
-	tmp := ""
 	text := ""
 	var resp ResponsePayload
 
 	for {
-		n, err := ws.Read(buf)
+		err = ws.ReadJSON(&resp)
 		if err != nil {
 			if err.Error() != "EOF" {
+				c <- "EOF"
 				return "", err
 			}
 		}
-		if strings.Contains(string(buf[:n]), "\x1e") {
-			t := strings.Split(string(buf[:n]), "\x1e")
-			tmp += t[0]
-			json.Unmarshal([]byte(tmp), &resp)
-			if resp.Type == 2 {
-				if resp.Item.Result.Value == "CaptchaChallenge" {
-					c <- "User needs to solve CAPTCHA to continue."
-				}
-				break
-			} else if resp.Type == 1 {
-				if len(resp.Arguments) > 0 {
-					if len(resp.Arguments[0].Messages) > 0 {
-						if resp.Arguments[0].Messages[0].MessageType == "InternalSearchResult" {
-							tmp = t[1]
-							continue
-						}
-						if len(resp.Arguments[0].Messages[0].Text) > len(text) {
-							c <- strings.ReplaceAll(resp.Arguments[0].Messages[0].Text, text, "")
-							if resp.Arguments[0].Messages[0].MessageType == "InternalSearchQuery" {
-								c <- "\n"
-							}
-						}
-						text = resp.Arguments[0].Messages[0].Text
-						// fmt.Println(resp.Arguments[0].Messages[0].Text + "\n\n")
+		if resp.Type == 2 {
+			if resp.Item.Result.Value == "CaptchaChallenge" {
+				c <- "User needs to solve CAPTCHA to continue."
+			}
+			break
+		} else if resp.Type == 1 {
+			if len(resp.Arguments) > 0 {
+				if len(resp.Arguments[0].Messages) > 0 {
+					if resp.Arguments[0].Messages[0].MessageType == "InternalSearchResult" {
+						continue
 					}
+					if len(resp.Arguments[0].Messages[0].Text) > len(text) {
+						c <- strings.ReplaceAll(resp.Arguments[0].Messages[0].Text, text, "")
+						if resp.Arguments[0].Messages[0].MessageType == "InternalSearchQuery" {
+							c <- "\n"
+						}
+					}
+					text = resp.Arguments[0].Messages[0].Text
+					// fmt.Println(resp.Arguments[0].Messages[0].Text + "\n\n")
 				}
 			}
-
-			tmp = t[1]
-		} else {
-			tmp += string(buf[:n])
 		}
 	}
 

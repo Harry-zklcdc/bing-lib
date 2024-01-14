@@ -266,6 +266,7 @@ func (chat *Chat) wsHandler(data map[string]any) (*websocket.Conn, error) {
 	wsConfig.Header.Add("Upgrade", "websocket")
 	wsConfig.Header.Add("Connection", "Upgrade")
 	wsConfig.Header.Add("Host", "sydney.bing.com")
+	wsConfig.Header.Add("Origin", "https://www.bing.com")
 	// wsConfig.Header.Add("Sec-Websocket-Extensions", "permessage-deflate; client_max_window_bits")
 	wsConfig.Header.Add("Sec-WebSocket-Version", "13")
 

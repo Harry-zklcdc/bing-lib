@@ -52,19 +52,22 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	chat := binglib.NewChat(cookie)
-	err = chat.NewConversation()
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println(r.RemoteAddr, r.Method, r.URL, "500")
-		return
-	}
-	chat.SetStyle(resq.Model)
+
 	if bingBaseUrl != "" {
 		chat.SetBingBaseUrl(bingBaseUrl)
 	}
 	if sydneyBaseUrl != "" {
 		chat.SetSydneyBaseUrl(sydneyBaseUrl)
 	}
+
+	err = chat.NewConversation()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println(r.RemoteAddr, r.Method, r.URL, "500")
+		return
+	}
+
+	chat.SetStyle(resq.Model)
 
 	prompt, msg := chat.MsgComposer(resq.Messages)
 	resp := chatResponse{

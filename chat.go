@@ -92,6 +92,20 @@ func (chat *Chat) NewConversation() error {
 		SetHeader("Referer", "https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx&wlexpsignin=1&wlexpsignin=1").
 		SetHeader("User-Agent", userAgent).
 		SetHeader("X-Ms-Useragent", "azsdk-js-api-client-factory/1.0.0-beta.1 core-rest-pipeline/1.12.0 OS/Windows").
+		SetHeader("Sec-Ch-Ua", "\"Not_A Brand\";v=\"8\", \"Chromium\";v=\"120\", \"Microsoft Edge\";v=\"120\"").
+		SetHeader("Sec-Ch-Ua-Arch", "\"x86\"").
+		SetHeader("Sec-Ch-Ua-Bitness", "\"64\"").
+		SetHeader("Sec-Ch-Ua-Full-Version", "\"120.0.2210.133\"").
+		SetHeader("Sec-Ch-Ua-Full-Version-List", "\"Not_A Brand\";v=\"8.0.0.0\", \"Chromium\";v=\"120.0.6099.217\", \"Microsoft Edge\";v=\"120.0.2210.133\"").
+		SetHeader("Sec-Ch-Ua-Mobile", "?0").
+		SetHeader("Sec-Ch-Ua-Model", "\"\"").
+		SetHeader("Sec-Ch-Ua-Platform", "\"Windows\"").
+		SetHeader("Sec-Ch-Ua-Platform-Version", "\"15.0.0\"").
+		SetHeader("Sec-Fetch-Dest", "empty").
+		SetHeader("Sec-Fetch-Mode", "cors").
+		SetHeader("Sec-Fetch-Site", "same-origin").
+		SetHeader("Sec-Gpc", "CEC540850250EBE21FEBF846CA8560950CAD611F98070E5E14F86FC68E429340").
+		SetHeader("Sec-Ms-Gec-Version", "1-120.0.2210.133").
 		Do()
 
 	var resp ChatReq

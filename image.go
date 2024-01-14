@@ -22,6 +22,13 @@ func NewImage(cookies string) *Image {
 	}
 }
 
+func (image *Image) Clone() *Image {
+	return &Image{
+		cookies:     image.cookies,
+		BingBaseUrl: image.BingBaseUrl,
+	}
+}
+
 func (image *Image) SetBingBaseUrl(bingBaseUrl string) *Image {
 	image.BingBaseUrl = bingBaseUrl
 	return image

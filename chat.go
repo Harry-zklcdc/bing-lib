@@ -36,6 +36,14 @@ func NewChat(cookies string) *Chat {
 	}
 }
 
+func (chat *Chat) Clone() *Chat {
+	return &Chat{
+		cookies:       chat.cookies,
+		BingBaseUrl:   chat.BingBaseUrl,
+		SydneyBaseUrl: chat.SydneyBaseUrl,
+	}
+}
+
 func (chat *Chat) SetCookies(cookies string) *Chat {
 	chat.cookies = cookies
 	return chat

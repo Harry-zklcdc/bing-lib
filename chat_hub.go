@@ -7,6 +7,18 @@ func newChatHub(chatReq ChatReq) *ChatHub {
 	}
 }
 
+func (chatHub *ChatHub) Clone() *ChatHub {
+	return &ChatHub{
+		chatReq: ChatReq{
+			ConversationId:                 chatHub.chatReq.ConversationId,
+			ClientId:                       chatHub.chatReq.ClientId,
+			ConversationSignature:          chatHub.chatReq.ConversationSignature,
+			EncryptedConversationSignature: chatHub.chatReq.EncryptedConversationSignature,
+		},
+		style: chatHub.style,
+	}
+}
+
 func (chatHub *ChatHub) SetStyle(style string) *ChatHub {
 	chatHub.style = style
 	return chatHub

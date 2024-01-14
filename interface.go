@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	bingBaseUrl   = "www.bing.com"
-	sydneyBaseUrl = "sydney.bing.com"
+	bingBaseUrl   = "https://www.bing.com"
+	sydneyBaseUrl = "wss://sydney.bing.com"
 
 	userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0"
 )

@@ -22,8 +22,8 @@ const (
 )
 
 const (
-	bingCreateConversationUrl = "https://%s/turing/conversation/create?bundleVersion=1.1418.13"
-	sydneyChatHubUrl          = "wss://%s/sydney/ChatHub?sec_access_token=%s"
+	bingCreateConversationUrl = "%s/turing/conversation/create?bundleVersion=1.1467.6"
+	sydneyChatHubUrl          = "%s/sydney/ChatHub?sec_access_token=%s"
 
 	spilt = "\x1e"
 )

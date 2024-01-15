@@ -19,6 +19,13 @@ const (
 	PRECISE_OFFLINE  = "Precise-offline"  // 精准, 不联网搜索
 	BALANCED_OFFLINE = "Balanced-offline" // 平衡, 不联网搜索
 	CREATIVE_OFFLINE = "Creative-offline" // 创造, 不联网搜索
+
+	PRECISE_G4T          = "Precise-g4t"          // 精准 GPT4-Turbo
+	BALANCED_G4T         = "Balanced-g4t"         // 平衡 GPT4-Turbo
+	CREATIVE_G4T         = "Creative-g4t"         // 创造 GPT4-Turbo
+	PRECISE_G4T_OFFLINE  = "Precise-g4t-offline"  // 精准 GPT4-Turbo, 不联网搜索
+	BALANCED_G4T_OFFLINE = "Balanced-g4t-offline" // 平衡 GPT4-Turbo, 不联网搜索
+	CREATIVE_G4T_OFFLINE = "Creative-g4t-offline" // 创造 GPT4-Turbo, 不联网搜索
 )
 
 const (
@@ -155,32 +162,18 @@ func (chat *Chat) optionsSetsHandler(systemContext []SystemContext) []string {
 		"eredirecturl",
 	}
 	if len(systemContext) > 0 {
-		optionsSets = []string{
-			"nlu_direct_response_filter",
-			"deepleo",
-			"disable_emoji_spoken_text",
-			"responsible_ai_policy_235",
-			"enablemm",
-			"dv3sugg",
-			"iyxapbing",
-			"iycapbing",
-			"fluxsrtrunc",
-			"fluxtrunc",
-			"fluxv1",
-			"rai278",
-			"replaceurl",
-			"iyoloexp",
-			"udt4upm5gnd",
-			"nojbfedge",
-		}
+		optionsSets = append(optionsSets, "nojbfedge")
 	}
 
 	tone := chat.GetStyle()
-	if tone == PRECISE || tone == PRECISE_OFFLINE {
+	if strings.Contains(tone, "g4t") {
+		optionsSets = append(optionsSets, "dlgpt4t")
+	}
+	if strings.Contains(tone, PRECISE) {
 		optionsSets = append(optionsSets, "h3precise", "clgalileo", "gencontentv3")
-	} else if tone == BALANCED || tone == BALANCED_OFFLINE {
+	} else if strings.Contains(tone, BALANCED) {
 		optionsSets = append(optionsSets, "galileo", "saharagenconv5")
-	} else if tone == CREATIVE || tone == CREATIVE_OFFLINE {
+	} else if strings.Contains(tone, CREATIVE) {
 		optionsSets = append(optionsSets, "h3imaginative", "clgalileo", "gencontentv3")
 	}
 	return optionsSets
@@ -243,7 +236,7 @@ func (chat *Chat) sliceIdsHandler(systemContext []SystemContext) []string {
 func (chat *Chat) pluginHandler(optionsSets *[]string) []Plugins {
 	plugins := []Plugins{}
 	tone := chat.GetStyle()
-	if tone == PRECISE || tone == BALANCED || tone == CREATIVE {
+	if !strings.Contains(tone, "offline") {
 		plugins = append(plugins, Plugins{Id: "c310c353-b9f0-4d76-ab0d-1dd5e979cf68"})
 	} else {
 		*optionsSets = append(*optionsSets, "nosearchall")
@@ -315,7 +308,7 @@ func (chat *Chat) requestPayloadHandler(msg string, optionsSets []string, sliceI
 					"messageId":   msgId,
 				},
 				// "conversationSignature": chat.GetChatHub().GetConversationSignature(),
-				"tone":           strings.ReplaceAll(tone, "-offline", ""),
+				"tone":           strings.ReplaceAll(strings.ReplaceAll(tone, "-g4t", ""), "-offline", ""),
 				"spokenTextMode": "None",
 				"participant": map[string]any{
 					"id": chat.GetChatHub().GetClientId(),
@@ -391,7 +384,14 @@ func (chat *Chat) Chat(prompt, msg string) (string, error) {
 	text := ""
 	var resp ResponsePayload
 
+	i := 0
 	for {
+		if i >= 25 {
+			err := ws.WriteMessage(websocket.TextMessage, []byte("{\"type\":6}"+spilt))
+			if err != nil {
+				break
+			}
+		}
 		err = ws.ReadJSON(&resp)
 		if err != nil {
 			if err.Error() != "EOF" {
@@ -411,6 +411,7 @@ func (chat *Chat) Chat(prompt, msg string) (string, error) {
 				}
 			}
 		}
+		i++
 	}
 
 	return text, nil
@@ -432,11 +433,19 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 	text := ""
 	var resp ResponsePayload
 
+	i := 0
 	for {
+		if i >= 25 {
+			err := ws.WriteMessage(websocket.TextMessage, []byte("{\"type\":6}"+spilt))
+			if err != nil {
+				break
+			}
+		}
 		err = ws.ReadJSON(&resp)
 		if err != nil {
 			if err.Error() != "EOF" {
 				c <- "EOF"
+				// tc <- "EOF"
 				return "", err
 			}
 		}
@@ -462,6 +471,7 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 				}
 			}
 		}
+		i++
 	}
 
 	c <- "EOF"

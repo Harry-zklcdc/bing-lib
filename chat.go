@@ -136,7 +136,7 @@ func (chat *Chat) MsgComposer(msgs []Message) (prompt string, msg string) {
 	return prompt, msg
 }
 
-func (chat *Chat) optionsSetsHandler() []string {
+func (chat *Chat) optionsSetsHandler(systemContext []SystemContext) []string {
 	optionsSets := []string{
 		"nlu_direct_response_filter",
 		"deepleo",
@@ -154,6 +154,26 @@ func (chat *Chat) optionsSetsHandler() []string {
 		"rcaltimeans",
 		"eredirecturl",
 	}
+	if len(systemContext) > 0 {
+		optionsSets = []string{
+			"nlu_direct_response_filter",
+			"deepleo",
+			"disable_emoji_spoken_text",
+			"responsible_ai_policy_235",
+			"enablemm",
+			"dv3sugg",
+			"iyxapbing",
+			"iycapbing",
+			"fluxsrtrunc",
+			"fluxtrunc",
+			"fluxv1",
+			"rai278",
+			"replaceurl",
+			"iyoloexp",
+			"udt4upm5gnd",
+			"nojbfedge",
+		}
+	}
 
 	tone := chat.GetStyle()
 	if tone == PRECISE || tone == PRECISE_OFFLINE {
@@ -164,6 +184,60 @@ func (chat *Chat) optionsSetsHandler() []string {
 		optionsSets = append(optionsSets, "h3imaginative", "clgalileo", "gencontentv3")
 	}
 	return optionsSets
+}
+
+func (chat *Chat) sliceIdsHandler(systemContext []SystemContext) []string {
+	if len(systemContext) > 0 {
+		return []string{
+			"winmuid1tf",
+			"styleoff",
+			"ccadesk",
+			"smsrpsuppv4cf",
+			"ssrrcache",
+			"contansperf",
+			"crchatrev",
+			"winstmsg2tf",
+			"creatgoglt",
+			"creatorv2t",
+			"sydconfigoptt",
+			"adssqovroff",
+			"530pstho",
+			"517opinion",
+			"418dhlth",
+			"512sprtic1s0",
+			"emsgpr",
+			"525ptrcps0",
+			"529rweas0",
+			"515oscfing2s0",
+			"524vidansgs0",
+		}
+	} else {
+		return []string{
+			"techpillscf",
+			"gbaa",
+			"gba",
+			"gbapa",
+			"codecreator",
+			"dlidcf",
+			"specedge",
+			"preall15",
+			"suppsm240-t",
+			"translref",
+			"ardsw_1_9_9",
+			"fluxnosearchc",
+			"fluxnosearch",
+			"1115rai289",
+			"1119backoss0",
+			"124multi2t",
+			"1129gpt4ts0",
+			"kchero50cf",
+			"cacfastapis",
+			"cacdupereccf",
+			"cacmuidarb",
+			"cacfrwebt2cf",
+			"sswebtop2cf",
+		}
+	}
 }
 
 func (chat *Chat) pluginHandler(optionsSets *[]string) []Plugins {
@@ -191,7 +265,7 @@ func (chat *Chat) systemContextHandler(prompt string) []SystemContext {
 	return systemContext
 }
 
-func (chat *Chat) requestPayloadHandler(msg string, optionsSets []string, plugins []Plugins, systemContext []SystemContext) map[string]any {
+func (chat *Chat) requestPayloadHandler(msg string, optionsSets []string, sliceIds []string, plugins []Plugins, systemContext []SystemContext) map[string]any {
 	msgId := hex.NewUUID()
 	tone := chat.GetStyle()
 
@@ -218,31 +292,7 @@ func (chat *Chat) requestPayloadHandler(msg string, optionsSets []string, plugin
 					"GenerateContentQuery",
 					"SearchQuery",
 				},
-				"sliceIds": []string{
-					"techpillscf",
-					"gbaa",
-					"gba",
-					"gbapa",
-					"codecreator",
-					"dlidcf",
-					"specedge",
-					"preall15",
-					"suppsm240-t",
-					"translref",
-					"ardsw_1_9_9",
-					"fluxnosearchc",
-					"fluxnosearch",
-					"1115rai289",
-					"1119backoss0",
-					"124multi2t",
-					"1129gpt4ts0",
-					"kchero50cf",
-					"cacfastapis",
-					"cacdupereccf",
-					"cacmuidarb",
-					"cacfrwebt2cf",
-					"sswebtop2cf",
-				},
+				"sliceIds":         sliceIds,
 				"isStartOfSession": true,
 				"verbosity":        "verbose",
 				"scenario":         "SERP",
@@ -326,10 +376,11 @@ func (chat *Chat) wsHandler(data map[string]any) (*websocket.Conn, error) {
 }
 
 func (chat *Chat) Chat(prompt, msg string) (string, error) {
-	optionsSets := chat.optionsSetsHandler()
-	plugins := chat.pluginHandler(&optionsSets)
 	systemContext := chat.systemContextHandler(prompt)
-	data := chat.requestPayloadHandler(msg, optionsSets, plugins, systemContext)
+	optionsSets := chat.optionsSetsHandler(systemContext)
+	sliceIds := chat.sliceIdsHandler(systemContext)
+	plugins := chat.pluginHandler(&optionsSets)
+	data := chat.requestPayloadHandler(msg, optionsSets, sliceIds, plugins, systemContext)
 
 	ws, err := chat.wsHandler(data)
 	if err != nil {
@@ -366,10 +417,11 @@ func (chat *Chat) Chat(prompt, msg string) (string, error) {
 }
 
 func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) {
-	optionsSets := chat.optionsSetsHandler()
-	plugins := chat.pluginHandler(&optionsSets)
 	systemContext := chat.systemContextHandler(prompt)
-	data := chat.requestPayloadHandler(msg, optionsSets, plugins, systemContext)
+	optionsSets := chat.optionsSetsHandler(systemContext)
+	sliceIds := chat.sliceIdsHandler(systemContext)
+	plugins := chat.pluginHandler(&optionsSets)
+	data := chat.requestPayloadHandler(msg, optionsSets, sliceIds, plugins, systemContext)
 
 	ws, err := chat.wsHandler(data)
 	if err != nil {

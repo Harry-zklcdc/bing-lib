@@ -22,6 +22,9 @@ var (
 
 var STOPFLAG = "stop"
 
+var chatMODELS = []string{binglib.BALANCED, binglib.BALANCED_OFFLINE, binglib.CREATIVE, binglib.CREATIVE_OFFLINE, binglib.PRECISE, binglib.PRECISE_OFFLINE,
+	binglib.BALANCED_G4T, binglib.BALANCED_G4T_OFFLINE, binglib.CREATIVE_G4T, binglib.CREATIVE_G4T_OFFLINE, binglib.PRECISE_G4T, binglib.PRECISE_G4T_OFFLINE}
+
 func chatHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -45,7 +48,7 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 	var resq chatRequest
 	json.Unmarshal(resqB, &resq)
 
-	if resq.Model != binglib.BALANCED && resq.Model != binglib.BALANCED_OFFLINE && resq.Model != binglib.CREATIVE && resq.Model != binglib.CREATIVE_OFFLINE && resq.Model != binglib.PRECISE && resq.Model != binglib.PRECISE_OFFLINE {
+	if !isInArray(chatMODELS, resq.Model) {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Invalid model"))
 		log.Println(r.RemoteAddr, r.Method, r.URL, "400")
@@ -155,6 +158,15 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println(r.RemoteAddr, r.Method, r.URL, "200")
 
+}
+
+func isInArray(arr []string, str string) bool {
+	for _, v := range arr {
+		if v == str {
+			return true
+		}
+	}
+	return false
 }
 
 func imageHandler(w http.ResponseWriter, r *http.Request) {

@@ -386,11 +386,12 @@ func (chat *Chat) Chat(prompt, msg string) (string, error) {
 
 	i := 0
 	for {
-		if i >= 25 {
+		if i >= 15 {
 			err := ws.WriteMessage(websocket.TextMessage, []byte("{\"type\":6}"+spilt))
 			if err != nil {
 				break
 			}
+			i = 0
 		}
 		err = ws.ReadJSON(&resp)
 		if err != nil {
@@ -435,11 +436,12 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 
 	i := 0
 	for {
-		if i >= 25 {
+		if i >= 15 {
 			err := ws.WriteMessage(websocket.TextMessage, []byte("{\"type\":6}"+spilt))
 			if err != nil {
 				break
 			}
+			i = 0
 		}
 		err = ws.ReadJSON(&resp)
 		if err != nil {

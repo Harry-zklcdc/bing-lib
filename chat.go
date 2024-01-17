@@ -139,7 +139,7 @@ func (chat *Chat) MsgComposer(msgs []Message) (prompt string, msg string) {
 			msg += "`you`:\n" + t.Content + "\n\n"
 		}
 	}
-	msg += "`you:`"
+	msg += "`you`:"
 	return prompt, msg
 }
 
@@ -382,7 +382,6 @@ func (chat *Chat) Chat(prompt, msg string) (string, error) {
 	defer ws.Close()
 
 	text := ""
-	var resp ResponsePayload
 
 	i := 0
 	for {
@@ -393,10 +392,11 @@ func (chat *Chat) Chat(prompt, msg string) (string, error) {
 			}
 			i = 0
 		}
+		resp := new(ResponsePayload)
 		err = ws.ReadJSON(&resp)
 		if err != nil {
 			if err.Error() != "EOF" {
-				return "", err
+				return text, err
 			}
 		}
 		if resp.Type == 2 {
@@ -432,7 +432,6 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 	defer ws.Close()
 
 	text := ""
-	var resp ResponsePayload
 
 	i := 0
 	for {
@@ -443,6 +442,7 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 			}
 			i = 0
 		}
+		resp := new(ResponsePayload)
 		err = ws.ReadJSON(&resp)
 		if err != nil {
 			if err.Error() != "EOF" {
@@ -462,13 +462,15 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 					if resp.Arguments[0].Messages[0].MessageType == "InternalSearchResult" {
 						continue
 					}
+					if resp.Arguments[0].Messages[0].MessageType == "InternalSearchQuery" || resp.Arguments[0].Messages[0].MessageType == "InternalLoaderMessage" {
+						c <- resp.Arguments[0].Messages[0].Text
+						c <- "\n\n"
+						continue
+					}
 					if len(resp.Arguments[0].Messages[0].Text) > len(text) {
 						c <- strings.ReplaceAll(resp.Arguments[0].Messages[0].Text, text, "")
-						if resp.Arguments[0].Messages[0].MessageType == "InternalSearchQuery" {
-							c <- "\n"
-						}
+						text = resp.Arguments[0].Messages[0].Text
 					}
-					text = resp.Arguments[0].Messages[0].Text
 					// fmt.Println(resp.Arguments[0].Messages[0].Text + "\n\n")
 				}
 			}

@@ -129,17 +129,37 @@ func (chat *Chat) NewConversation() error {
 }
 
 func (chat *Chat) MsgComposer(msgs []Message) (prompt string, msg string) {
+	systemMsgNum := 0
 	for _, t := range msgs {
+		if t.Role == "system" {
+			systemMsgNum++
+		}
+	}
+	if len(msgs)-systemMsgNum == 1 {
+		return "", msgs[0].Content
+	}
+
+	var lastRole string
+	for _, t := range msgs {
+		if lastRole == t.Role {
+			msg += "\n" + t.Content
+			continue
+		} else if lastRole != "" {
+			msg += "\n\n"
+		}
 		switch t.Role {
 		case "system":
 			prompt += t.Content
 		case "user":
-			msg += "`me`:\n" + t.Content + "\n\n"
+			msg += "`me`:\n" + t.Content
 		case "assistant":
-			msg += "`you`:\n" + t.Content + "\n\n"
+			msg += "`you`:\n" + t.Content
+		}
+		if t.Role != "system" {
+			lastRole = t.Role
 		}
 	}
-	msg += "`you`:"
+	msg += "\n\n`you`:"
 	return prompt, msg
 }
 

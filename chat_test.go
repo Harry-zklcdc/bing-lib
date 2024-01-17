@@ -91,3 +91,65 @@ func TestSydney(t *testing.T) {
 	}
 	t.Log(r)
 }
+
+func TestMsgComposer(t *testing.T) {
+	msgs := []binglib.Message{
+		{
+			Role:    "system",
+			Content: "Test 1",
+		},
+		{
+			Role:    "user",
+			Content: "Test 1",
+		},
+		{
+			Role:    "assistant",
+			Content: "Test 1",
+		},
+	}
+	prompt, msg := c.MsgComposer(msgs)
+	t.Log(prompt)
+	t.Log(msg)
+
+	msgs = []binglib.Message{
+		{
+			Role:    "system",
+			Content: "Test 2",
+		},
+		{
+			Role:    "user",
+			Content: "Test 2",
+		},
+		{
+			Role:    "user",
+			Content: "Test 2",
+		},
+		{
+			Role:    "assistant",
+			Content: "Test 2",
+		},
+	}
+	prompt, msg = c.MsgComposer(msgs)
+	t.Log(prompt)
+	t.Log(msg)
+
+	msgs = []binglib.Message{
+		{
+			Role:    "system",
+			Content: "Test 3",
+		},
+	}
+	prompt, msg = c.MsgComposer(msgs)
+	t.Log(prompt)
+	t.Log(msg)
+
+	msgs = []binglib.Message{
+		{
+			Role:    "user",
+			Content: "Test 4",
+		},
+	}
+	prompt, msg = c.MsgComposer(msgs)
+	t.Log(prompt)
+	t.Log(msg)
+}

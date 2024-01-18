@@ -417,6 +417,8 @@ func (chat *Chat) Chat(prompt, msg string) (string, error) {
 		if err != nil {
 			if err.Error() != "EOF" {
 				return text, err
+			} else {
+				return text, nil
 			}
 		}
 		if resp.Type == 2 {
@@ -467,8 +469,10 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 		if err != nil {
 			if err.Error() != "EOF" {
 				c <- "EOF"
-				// tc <- "EOF"
 				return "", err
+			} else {
+				c <- "EOF"
+				return "", nil
 			}
 		}
 		if resp.Type == 2 {

@@ -172,30 +172,28 @@ func (chat *Chat) optionsSetsHandler(systemContext []SystemContext) []string {
 		"enablemm",
 		"dv3sugg",
 		"autosave",
-		"iyxapbing",
-		"iycapbing",
-		"rai289",
-		"enflst",
-		"enpcktrk",
-		"rcaldictans",
-		"rcaltimeans",
+		"uquopt",
+		"osbsdrecoff",
+		"fluxcopilot",
+		"fdwtlst",
+		"fluxprod",
 		"eredirecturl",
 	}
 	if len(systemContext) > 0 {
-		optionsSets = append(optionsSets, "nojbfedge")
+		optionsSets = append(optionsSets, "nojbfedge", "rai278", "enflst", "enpcktrk", "rcaldictans", "rcaltimeans", "nojbfedge")
 	}
 
 	tone := chat.GetStyle()
 	if strings.Contains(tone, "g4t") {
 		optionsSets = append(optionsSets, "dlgpt4t")
 	}
-	if strings.Contains(tone, PRECISE) {
-		optionsSets = append(optionsSets, "h3precise", "clgalileo", "gencontentv3")
-	} else if strings.Contains(tone, BALANCED) {
-		optionsSets = append(optionsSets, "galileo", "saharagenconv5")
-	} else if strings.Contains(tone, CREATIVE) {
-		optionsSets = append(optionsSets, "h3imaginative", "clgalileo", "gencontentv3")
-	}
+	// if strings.Contains(tone, PRECISE) {
+	// 	optionsSets = append(optionsSets, "h3precise", "clgalileo", "gencontentv3")
+	// } else if strings.Contains(tone, BALANCED) {
+	// 	optionsSets = append(optionsSets, "galileo", "saharagenconv5")
+	// } else if strings.Contains(tone, CREATIVE) {
+	// 	optionsSets = append(optionsSets, "h3imaginative", "clgalileo", "gencontentv3")
+	// }
 	return optionsSets
 }
 

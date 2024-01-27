@@ -39,6 +39,11 @@ func (image *Image) SetCookies(cookies string) *Image {
 	return image
 }
 
+func (image *Image) SetXFF(xff string) *Image {
+	image.xff = xff
+	return image
+}
+
 func (image *Image) GetBingBaseUrl() string {
 	return image.BingBaseUrl
 }
@@ -47,10 +52,17 @@ func (image *Image) GetCookies() string {
 	return image.cookies
 }
 
+func (image *Image) GetXFF() string {
+	return image.xff
+}
+
 func (image *Image) Image(q string) ([]string, string, error) {
 	var res []string
 
 	c := request.NewRequest()
+	if image.xff != "" {
+		c.SetHeader("X-Forwarded-For", image.xff)
+	}
 	c.Post().SetUrl(bingImageCreateUrl, image.BingBaseUrl, url.QueryEscape(q)).
 		SetBody(strings.NewReader(url.QueryEscape(fmt.Sprintf("q=%s&qs=ds", q)))).
 		SetContentType("application/x-www-form-urlencoded").

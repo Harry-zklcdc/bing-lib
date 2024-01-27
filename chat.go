@@ -56,6 +56,11 @@ func (chat *Chat) SetCookies(cookies string) *Chat {
 	return chat
 }
 
+func (chat *Chat) SetXFF(xff string) *Chat {
+	chat.xff = xff
+	return chat
+}
+
 func (chat *Chat) SetStyle(style string) *Chat {
 	chat.GetChatHub().SetStyle(style)
 	return chat
@@ -73,6 +78,10 @@ func (chat *Chat) SetSydneyBaseUrl(sydneyBaseUrl string) *Chat {
 
 func (chat *Chat) GetCookies() string {
 	return chat.cookies
+}
+
+func (chat *Chat) GetXFF() string {
+	return chat.xff
 }
 
 func (chat *Chat) GetChatHub() *ChatHub {
@@ -93,6 +102,9 @@ func (chat *Chat) GetSydneyBaseUrl() string {
 
 func (chat *Chat) NewConversation() error {
 	c := request.NewRequest()
+	if chat.xff != "" {
+		c.SetHeader("X-Forwarded-For", chat.xff)
+	}
 	c.SetUrl(fmt.Sprintf(bingCreateConversationUrl, chat.BingBaseUrl)).
 		SetHeader("Cookie", chat.cookies).
 		SetHeader("Origin", "https://www.bing.com").
@@ -346,12 +358,15 @@ func (chat *Chat) wsHandler(data map[string]any) (*websocket.Conn, error) {
 	dialer := websocket.DefaultDialer
 	dialer.Proxy = http.ProxyFromEnvironment
 	headers := http.Header{}
-	headers.Add("Accept-Encoding", "gzip, deflate, br")
-	headers.Add("Accept-Language", "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7")
-	headers.Add("User-Agent", userAgent)
+	headers.Set("Accept-Encoding", "gzip, deflate, br")
+	headers.Set("Accept-Language", "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7")
+	headers.Set("User-Agent", userAgent)
+	if chat.xff != "" {
+		headers.Set("X-Forwarded-For", chat.xff)
+	}
 	if chat.GetSydneyBaseUrl() == sydneyBaseUrl {
-		headers.Add("Host", "sydney.bing.com")
-		headers.Add("Origin", "https://www.bing.com")
+		headers.Set("Host", "sydney.bing.com")
+		headers.Set("Origin", "https://www.bing.com")
 	}
 
 	ws, _, err := dialer.Dial(fmt.Sprintf(sydneyChatHubUrl, chat.SydneyBaseUrl, url.QueryEscape(chat.GetChatHub().GetEncryptedConversationSignature())), headers)

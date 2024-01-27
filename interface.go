@@ -15,6 +15,7 @@ const (
 
 type Chat struct {
 	cookies       string
+	xff           string // X-Forwarded-For Header
 	chatHub       *ChatHub
 	BingBaseUrl   string
 	SydneyBaseUrl string
@@ -22,6 +23,7 @@ type Chat struct {
 
 type Image struct {
 	cookies     string
+	xff         string // X-Forwarded-For Header
 	BingBaseUrl string
 }
 

@@ -6,13 +6,14 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 )
 
 // Client 		==> 客户端实例
 type Client struct {
 	Request *Request
-	Cookie  *http.Cookie
+	Cookies []*http.Cookie
 	Result  Result
 }
 
@@ -58,15 +59,16 @@ func (c *Client) Do() *Client {
 	//HTTP请求构造
 	request, _ := http.NewRequest(c.Request.Method, c.Request.Url, c.Request.Data)
 	request.Header.Set("Content-Type", c.Request.ContentType)
-	request.Header.Set("Referer", c.Request.Url)
 	if c.Request.Authorization != "" {
 		request.Header.Set("Authorization", c.Request.Authorization)
 	}
 	if c.Request.UserAgent != "" {
 		request.Header.Set("User-Agent", c.Request.UserAgent)
 	}
-	if c.Cookie.String() != "" {
-		request.AddCookie(c.Cookie)
+	if len(c.Cookies) != 0 {
+		for _, cookie := range c.Cookies {
+			request.AddCookie(cookie)
+		}
 	}
 	// 支持自定义Header
 	for k, v := range c.Request.Header {
@@ -97,7 +99,7 @@ func (c *Client) Do() *Client {
 		return c
 	}
 	if len(res.Cookies()) > 1 {
-		c.Cookie = res.Cookies()[1]
+		c.Cookies = res.Cookies()
 	}
 	defer res.Body.Close()
 	c.Result.Status = res.StatusCode
@@ -148,6 +150,12 @@ func (c *Client) SetContentType(contentType string) *Client {
 	return c
 }
 
+// SetUserAgent 		==> 定义用户代理
+func (c *Client) SetUserAgent(userAgent string) *Client {
+	c.Request.UserAgent = userAgent
+	return c
+}
+
 // SetBody 		==> 定义请求内容
 func (c *Client) SetBody(body io.Reader) *Client {
 	c.Request.Data = body
@@ -175,6 +183,31 @@ func (c *Client) SetAuthorization(credentials string) *Client {
 // SetTimeOut 		==> 设置会话超时上限
 func (c *Client) SetTimeout(timeout time.Duration) *Client {
 	c.Request.Timeout = timeout
+	return c
+}
+
+// SetCookie 		==> 设置Cookie
+func (c *Client) SetCookie(cookie *http.Cookie) *Client {
+	c.Cookies = append(c.Cookies, cookie)
+	return c
+}
+
+// SetCookies 		==> 设置Cookies
+func (c *Client) SetCookies(cookies string) *Client {
+	cookielist := strings.Split(cookies, "; ")
+	for _, cookie := range cookielist {
+		cookiekv := strings.Split(cookie, "=")
+		c.SetCookie(&http.Cookie{
+			Name:  cookiekv[0],
+			Value: strings.Join(cookiekv[1:], "="),
+		})
+	}
+	return c
+}
+
+// SetProxy 		==> 设置代理
+func (c *Client) SetProxy(proxyUrl url.URL) *Client {
+	c.Request.ProxyUrl = proxyUrl
 	return c
 }
 

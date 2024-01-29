@@ -16,15 +16,17 @@ const (
 type Chat struct {
 	cookies       string
 	xff           string // X-Forwarded-For Header
+	bypassServer  string
 	chatHub       *ChatHub
 	BingBaseUrl   string
 	SydneyBaseUrl string
 }
 
 type Image struct {
-	cookies     string
-	xff         string // X-Forwarded-For Header
-	BingBaseUrl string
+	cookies      string
+	xff          string // X-Forwarded-For Header
+	bypassServer string
+	BingBaseUrl  string
 }
 
 type Message struct {
@@ -163,4 +165,20 @@ type ResponsePayload struct {
 			ServiceVersion string `json:"serviceVersion"`
 		} `json:"result"`
 	} `json:"item,omitempty"`
+}
+
+type passRequestStruct struct {
+	IG       string `json:"IG,omitempty"`
+	Cookies  string `json:"cookies"`
+	Iframeid string `json:"iframeid,omitempty"`
+	ConvId   string `json:"convId,omitempty"`
+	RId      string `json:"rid,omitempty"`
+}
+
+type PassResponseStruct struct {
+	Result struct {
+		Cookies    string `json:"cookies"`
+		ScreenShot string `json:"screenshot"`
+	} `json:"result"`
+	Error string `json:"error"`
 }

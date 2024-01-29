@@ -61,6 +61,11 @@ func (chat *Chat) SetXFF(xff string) *Chat {
 	return chat
 }
 
+func (chat *Chat) SetBypassServer(bypassServer string) *Chat {
+	chat.bypassServer = bypassServer
+	return chat
+}
+
 func (chat *Chat) SetStyle(style string) *Chat {
 	chat.GetChatHub().SetStyle(style)
 	return chat
@@ -84,6 +89,10 @@ func (chat *Chat) GetXFF() string {
 	return chat.xff
 }
 
+func (chat *Chat) GetBypassServer() string {
+	return chat.bypassServer
+}
+
 func (chat *Chat) GetChatHub() *ChatHub {
 	return chat.chatHub
 }
@@ -102,15 +111,19 @@ func (chat *Chat) GetSydneyBaseUrl() string {
 
 func (chat *Chat) NewConversation() error {
 	c := request.NewRequest()
-	if chat.xff != "" {
+	if chat.GetXFF() != "" {
 		c.SetHeader("X-Forwarded-For", chat.xff)
 	}
+	if chat.GetBingBaseUrl() == bingBaseUrl {
+		c.SetHeader("Host", "www.bing.com")
+		c.SetHeader("Origin", "https://www.bing.com")
+	}
 	c.SetUrl(fmt.Sprintf(bingCreateConversationUrl, chat.BingBaseUrl)).
-		SetHeader("Cookie", chat.cookies).
-		SetHeader("Origin", "https://www.bing.com").
-		SetHeader("Referer", "https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx&wlexpsignin=1&wlexpsignin=1").
-		SetHeader("User-Agent", userAgent).
-		SetHeader("X-Ms-Useragent", "azsdk-js-api-client-factory/1.0.0-beta.1 core-rest-pipeline/1.12.0 OS/Windows").
+		SetUserAgent(userAgent).
+		SetCookies(chat.cookies).
+		SetHeader("Accept", "application/json").
+		SetHeader("Accept-Language", "en-US;q=0.9").
+		SetHeader("Referer", "https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx").
 		SetHeader("Sec-Ch-Ua", "\"Not_A Brand\";v=\"8\", \"Chromium\";v=\"120\", \"Microsoft Edge\";v=\"120\"").
 		SetHeader("Sec-Ch-Ua-Arch", "\"x86\"").
 		SetHeader("Sec-Ch-Ua-Bitness", "\"64\"").
@@ -123,8 +136,8 @@ func (chat *Chat) NewConversation() error {
 		SetHeader("Sec-Fetch-Dest", "empty").
 		SetHeader("Sec-Fetch-Mode", "cors").
 		SetHeader("Sec-Fetch-Site", "same-origin").
-		SetHeader("Sec-Gpc", "CEC540850250EBE21FEBF846CA8560950CAD611F98070E5E14F86FC68E429340").
-		SetHeader("Sec-Ms-Gec-Version", "1-120.0.2210.133").
+		SetHeader("X-Ms-Useragent", "azsdk-js-api-client-factory/1.0.0-beta.1 core-rest-pipeline/1.12.3 OS/Windows").
+		SetHeader("X-Ms-Client-Request-Id", hex.NewUUID()).
 		Do()
 
 	var resp ChatReq
@@ -288,11 +301,11 @@ func (chat *Chat) systemContextHandler(prompt string) []SystemContext {
 	return systemContext
 }
 
-func (chat *Chat) requestPayloadHandler(msg string, optionsSets []string, sliceIds []string, plugins []Plugins, systemContext []SystemContext) map[string]any {
-	msgId := hex.NewUUID()
+func (chat *Chat) requestPayloadHandler(msg string, optionsSets []string, sliceIds []string, plugins []Plugins, systemContext []SystemContext) (data map[string]any, msgId string) {
+	msgId = hex.NewUUID()
 	tone := chat.GetStyle()
 
-	data := map[string]any{
+	data = map[string]any{
 		"arguments": []any{
 			map[string]any{
 				"source":      "cib",
@@ -351,7 +364,7 @@ func (chat *Chat) requestPayloadHandler(msg string, optionsSets []string, sliceI
 		"type":         4,
 	}
 
-	return data
+	return
 }
 
 func (chat *Chat) wsHandler(data map[string]any) (*websocket.Conn, error) {
@@ -360,8 +373,12 @@ func (chat *Chat) wsHandler(data map[string]any) (*websocket.Conn, error) {
 	headers := http.Header{}
 	headers.Set("Accept-Encoding", "gzip, deflate, br")
 	headers.Set("Accept-Language", "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7")
+	headers.Set("Cache-Control", "no-cache")
+	headers.Set("Pragma", "no-cache")
 	headers.Set("User-Agent", userAgent)
-	if chat.xff != "" {
+	headers.Set("Referer", "https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx")
+	headers.Set("Cookie", chat.cookies)
+	if chat.GetXFF() != "" {
 		headers.Set("X-Forwarded-For", chat.xff)
 	}
 	if chat.GetSydneyBaseUrl() == sydneyBaseUrl {
@@ -406,7 +423,7 @@ func (chat *Chat) Chat(prompt, msg string) (string, error) {
 	optionsSets := chat.optionsSetsHandler(systemContext)
 	sliceIds := chat.sliceIdsHandler(systemContext)
 	plugins := chat.pluginHandler(&optionsSets)
-	data := chat.requestPayloadHandler(msg, optionsSets, sliceIds, plugins, systemContext)
+	data, msgId := chat.requestPayloadHandler(msg, optionsSets, sliceIds, plugins, systemContext)
 
 	ws, err := chat.wsHandler(data)
 	if err != nil {
@@ -415,6 +432,7 @@ func (chat *Chat) Chat(prompt, msg string) (string, error) {
 	defer ws.Close()
 
 	text := ""
+	verifyStatus := false
 
 	i := 0
 	for {
@@ -437,8 +455,26 @@ func (chat *Chat) Chat(prompt, msg string) (string, error) {
 		if resp.Type == 2 {
 			if resp.Item.Result.Value == "CaptchaChallenge" {
 				text = "User needs to solve CAPTCHA to continue."
+				if chat.GetBypassServer() != "" && !verifyStatus {
+					r, err := Bypass(chat.GetBypassServer(), chat.GetCookies(), "local-gen-"+hex.NewUUID(), hex.NewUpperHex(32), chat.GetChatHub().GetConversationId(), msgId)
+					if err != nil {
+						break
+					}
+					verifyStatus = true
+					chat.SetCookies(r.Result.Cookies)
+					ws.Close()
+					ws, err = chat.wsHandler(data)
+					if err != nil {
+						break
+					}
+					defer ws.Close()
+				} else {
+					break
+				}
+			} else {
+				break
 			}
-			break
+
 		} else if resp.Type == 1 {
 			if len(resp.Arguments) > 0 {
 				if len(resp.Arguments[0].Messages) > 0 {
@@ -458,15 +494,17 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 	optionsSets := chat.optionsSetsHandler(systemContext)
 	sliceIds := chat.sliceIdsHandler(systemContext)
 	plugins := chat.pluginHandler(&optionsSets)
-	data := chat.requestPayloadHandler(msg, optionsSets, sliceIds, plugins, systemContext)
+	data, msgId := chat.requestPayloadHandler(msg, optionsSets, sliceIds, plugins, systemContext)
 
 	ws, err := chat.wsHandler(data)
 	if err != nil {
+		c <- "EOF"
 		return "", err
 	}
 	defer ws.Close()
 
 	text := ""
+	verifyStatus := false
 
 	i := 0
 	for {
@@ -490,9 +528,30 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 		}
 		if resp.Type == 2 {
 			if resp.Item.Result.Value == "CaptchaChallenge" {
-				c <- "User needs to solve CAPTCHA to continue."
+				if chat.GetBypassServer() != "" && !verifyStatus {
+					c <- "Bypassing... Please Wait.\n\n"
+					r, err := Bypass(chat.GetBypassServer(), chat.GetCookies(), "local-gen-"+hex.NewUUID(), hex.NewUpperHex(32), chat.GetChatHub().GetConversationId(), msgId)
+					if err != nil {
+						c <- "Bypass Fail!"
+						break
+					}
+					fmt.Println(r.Result.Cookies)
+					verifyStatus = true
+					chat.SetCookies(r.Result.Cookies)
+					ws.Close()
+					ws, err = chat.wsHandler(data)
+					if err != nil {
+						c <- "Bypass Fail!"
+						break
+					}
+					defer ws.Close()
+				} else {
+					c <- "User needs to solve CAPTCHA to continue."
+					break
+				}
+			} else {
+				break
 			}
-			break
 		} else if resp.Type == 1 {
 			if len(resp.Arguments) > 0 {
 				if len(resp.Arguments[0].Messages) > 0 {

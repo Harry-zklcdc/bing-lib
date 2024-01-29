@@ -44,6 +44,11 @@ func (image *Image) SetXFF(xff string) *Image {
 	return image
 }
 
+func (image *Image) SetBypassServer(bypassServer string) *Image {
+	image.bypassServer = bypassServer
+	return image
+}
+
 func (image *Image) GetBingBaseUrl() string {
 	return image.BingBaseUrl
 }
@@ -54,6 +59,10 @@ func (image *Image) GetCookies() string {
 
 func (image *Image) GetXFF() string {
 	return image.xff
+}
+
+func (image *Image) GetBypassServer() string {
+	return image.bypassServer
 }
 
 func (image *Image) Image(q string) ([]string, string, error) {

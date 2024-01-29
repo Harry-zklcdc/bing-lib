@@ -39,3 +39,7 @@ func NewHex(n int) string {
 func NewHexLowercase(n int) string {
 	return strings.ToLower(NewHex(n))
 }
+
+func NewUpperHex(n int) string {
+	return strings.ToUpper(NewHex(n))
+}

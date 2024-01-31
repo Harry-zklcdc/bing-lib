@@ -454,7 +454,13 @@ func (chat *Chat) Chat(prompt, msg string) (string, error) {
 		}
 		if resp.Type == 2 {
 			if resp.Item.Result.Value == "CaptchaChallenge" || resp.Item.Result.Value == "Throttled" {
-				text = "User needs to solve CAPTCHA to continue."
+				if resp.Item.Result.Value == "CaptchaChallenge" {
+					text = "User needs to solve CAPTCHA to continue."
+				} else if resp.Item.Result.Value == "Throttled" {
+					text = "Request is throttled."
+				} else {
+					text = "Unknown error."
+				}
 				if chat.GetBypassServer() != "" && !verifyStatus {
 					r, err := Bypass(chat.GetBypassServer(), chat.GetCookies(), "local-gen-"+hex.NewUUID(), hex.NewUpperHex(32), chat.GetChatHub().GetConversationId(), msgId)
 					if err != nil {
@@ -546,7 +552,13 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 					}
 					defer ws.Close()
 				} else {
-					c <- "User needs to solve CAPTCHA to continue."
+					if resp.Item.Result.Value == "CaptchaChallenge" {
+						c <- "User needs to solve CAPTCHA to continue."
+					} else if resp.Item.Result.Value == "Throttled" {
+						c <- "Request is throttled."
+					} else {
+						c <- "Unknown error."
+					}
 					break
 				}
 			} else {

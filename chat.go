@@ -543,7 +543,6 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 						c <- "Bypass Fail!"
 						break
 					}
-					fmt.Println(r.Result.Cookies)
 					verifyStatus = true
 					chat.SetCookies(r.Result.Cookies)
 					ws.Close()

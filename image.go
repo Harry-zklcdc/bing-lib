@@ -24,8 +24,10 @@ func NewImage(cookies string) *Image {
 
 func (image *Image) Clone() *Image {
 	return &Image{
-		cookies:     image.cookies,
-		BingBaseUrl: image.BingBaseUrl,
+		cookies:      image.cookies,
+		xff:          image.xff,
+		bypassServer: image.bypassServer,
+		BingBaseUrl:  image.BingBaseUrl,
 	}
 }
 

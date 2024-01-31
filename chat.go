@@ -46,6 +46,8 @@ func NewChat(cookies string) *Chat {
 func (chat *Chat) Clone() *Chat {
 	return &Chat{
 		cookies:       chat.cookies,
+		xff:           chat.xff,
+		bypassServer:  chat.bypassServer,
 		BingBaseUrl:   chat.BingBaseUrl,
 		SydneyBaseUrl: chat.SydneyBaseUrl,
 	}

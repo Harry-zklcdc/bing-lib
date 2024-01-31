@@ -453,7 +453,7 @@ func (chat *Chat) Chat(prompt, msg string) (string, error) {
 			}
 		}
 		if resp.Type == 2 {
-			if resp.Item.Result.Value == "CaptchaChallenge" {
+			if resp.Item.Result.Value == "CaptchaChallenge" || resp.Item.Result.Value == "Throttled" {
 				text = "User needs to solve CAPTCHA to continue."
 				if chat.GetBypassServer() != "" && !verifyStatus {
 					r, err := Bypass(chat.GetBypassServer(), chat.GetCookies(), "local-gen-"+hex.NewUUID(), hex.NewUpperHex(32), chat.GetChatHub().GetConversationId(), msgId)
@@ -527,7 +527,7 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 			}
 		}
 		if resp.Type == 2 {
-			if resp.Item.Result.Value == "CaptchaChallenge" {
+			if resp.Item.Result.Value == "CaptchaChallenge" || resp.Item.Result.Value == "Throttled" {
 				if chat.GetBypassServer() != "" && !verifyStatus {
 					c <- "Bypassing... Please Wait.\n\n"
 					r, err := Bypass(chat.GetBypassServer(), chat.GetCookies(), "local-gen-"+hex.NewUUID(), hex.NewUpperHex(32), chat.GetChatHub().GetConversationId(), msgId)

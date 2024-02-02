@@ -332,6 +332,7 @@ func (chat *Chat) requestPayloadHandler(msg string, optionsSets []string, sliceI
 				},
 				"sliceIds":         sliceIds,
 				"isStartOfSession": true,
+				"gptId":            "copilot",
 				"verbosity":        "verbose",
 				"scenario":         "SERP",
 				"plugins":          plugins,
@@ -345,12 +346,32 @@ func (chat *Chat) requestPayloadHandler(msg string, optionsSets []string, sliceI
 				},
 				"requestId": msgId,
 				"message": map[string]any{
-					"author":      "user",
-					"inputMethod": "Keyboard",
-					"text":        msg,
-					"messageType": "Chat",
-					"requestId":   msgId,
-					"messageId":   msgId,
+					"author":        "user",
+					"inputMethod":   "Keyboard",
+					"text":          msg,
+					"messageType":   "Chat",
+					"requestId":     msgId,
+					"messageId":     msgId,
+					"userIpAddress": chat.GetXFF(),
+					"locale":        "zh-CN",
+					"market":        "en-US",
+					"region":        "US",
+					"location":      "lat:47.639557;long:-122.128159;re=1000m;",
+					"locationHints": []any{
+						map[string]any{
+							"country":           "United States",
+							"state":             "California",
+							"city":              "Los Angeles",
+							"timezoneoffset":    8,
+							"countryConfidence": 8,
+							"Center": map[string]any{
+								"Latitude":  78.4156,
+								"Longitude": -101.4458,
+							},
+							"RegionType": 2,
+							"SourceType": 1,
+						},
+					},
 				},
 				// "conversationSignature": chat.GetChatHub().GetConversationSignature(),
 				"tone":           strings.ReplaceAll(strings.ReplaceAll(tone, "-g4t", ""), "-offline", ""),
@@ -471,6 +492,7 @@ func (chat *Chat) Chat(prompt, msg string) (string, error) {
 					verifyStatus = true
 					chat.SetCookies(r.Result.Cookies)
 					ws.Close()
+					data["invocationId"] = "1"
 					ws, err = chat.wsHandler(data)
 					if err != nil {
 						break
@@ -546,6 +568,7 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 					verifyStatus = true
 					chat.SetCookies(r.Result.Cookies)
 					ws.Close()
+					data["invocationId"] = "1"
 					ws, err = chat.wsHandler(data)
 					if err != nil {
 						c <- "Bypass Fail!"

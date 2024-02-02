@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/Harry-zklcdc/bing-lib/lib/hex"
@@ -501,6 +502,13 @@ func (chat *Chat) Chat(prompt, msg string) (string, error) {
 				} else {
 					break
 				}
+			} else if resp.Item.Result.Value == "Success" {
+				if len(resp.Item.Messages) > 1 {
+					for i, v := range resp.Item.Messages[len(resp.Item.Messages)-1].SourceAttributions {
+						text += "\n[^" + strconv.Itoa(i+1) + "^]: [" + v.ProviderDisplayName + "](" + v.SeeMoreUrl + ")"
+					}
+				}
+				break
 			} else {
 				break
 			}
@@ -585,6 +593,13 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 					}
 					break
 				}
+			} else if resp.Item.Result.Value == "Success" {
+				if len(resp.Item.Messages) > 1 {
+					for i, v := range resp.Item.Messages[len(resp.Item.Messages)-1].SourceAttributions {
+						c <- "\n[^" + strconv.Itoa(i+1) + "^]: [" + v.ProviderDisplayName + "](" + v.SeeMoreUrl + ")"
+					}
+				}
+				break
 			} else {
 				break
 			}

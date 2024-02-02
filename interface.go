@@ -63,90 +63,12 @@ type ResponsePayload struct {
 	Target       string `json:"target"`
 	InvocationId int    `json:"invocationId,string"`
 	Arguments    []struct {
-		Messages []struct {
-			Text   string `json:"text"`
-			Author string `json:"author"`
-			From   struct {
-				Id   string `json:"id"`
-				Name any    `json:"name"`
-			} `json:"from"`
-			CreatedAt     time.Time `json:"createdAt"`
-			Timestamp     time.Time `json:"timestamp"`
-			Locale        string    `json:"locale"`
-			Market        string    `json:"market"`
-			Region        string    `json:"region"`
-			Location      string    `json:"location"`
-			LocationHints []struct {
-				Country           string `json:"country"`
-				CountryConfidence int    `json:"countryConfidence"`
-				State             string `json:"state"`
-				City              string `json:"city"`
-				CityConfidence    int    `json:"cityConfidence"`
-				ZipCode           string `json:"zipCode"`
-				TimeZoneOffset    int    `json:"timeZoneOffset"`
-				Dma               int    `json:"dma"`
-				SourceType        int    `json:"sourceType"`
-				Center            struct {
-					Latitude  float64 `json:"latitude"`
-					Longitude float64 `json:"longitude"`
-					Height    any     `json:"height"`
-				} `json:"center"`
-				RegionType int `json:"regionType"`
-			} `json:"locationHints"`
-			MessageId uuid.UUID `json:"messageId"`
-			RequestId uuid.UUID `json:"requestId"`
-			Offense   string    `json:"offense"`
-			Feedback  struct {
-				Tag       any    `json:"tag"`
-				UpdatedOn any    `json:"updatedOn"`
-				Type      string `json:"type"`
-			} `json:"feedback"`
-			ContentOrigin string `json:"contentOrigin"`
-			Privacy       any    `json:"privacy"`
-			InputMethod   string `json:"inputMethod"`
-			HiddenText    string `json:"hiddenText"`
-			MessageType   string `json:"messageType"`
-			AdaptiveCards []struct {
-				Type    string `json:"type"`
-				Version string `json:"version"`
-				Body    []struct {
-					Type    string `json:"type"`
-					Version string `json:"version"`
-					Body    []struct {
-						Type string `json:"type"`
-						Text string `json:"text"`
-						Wrap bool   `json:"wrap"`
-					}
-				} `json:"body"`
-			} `json:"adaptiveCards"`
-			SourceAttributions []struct {
-				ProviderDisplayName string `json:"providerDisplayName"`
-				SeeMoreUrl          string `json:"seeMoreUrl"`
-				SearchQuery         string `json:"searchQuery"`
-			} `json:"sourceAttributions"`
-			SuggestedResponses []struct {
-				Text        string    `json:"text"`
-				Author      string    `json:"author"`
-				CreatedAt   time.Time `json:"createdAt"`
-				Timestamp   time.Time `json:"timestamp"`
-				MessageId   string    `json:"messageId"`
-				MessageType string    `json:"messageType"`
-				Offense     string    `json:"offense"`
-				Feedback    struct {
-					Tag       any    `json:"tag"`
-					UpdatedOn any    `json:"updatedOn"`
-					Type      string `json:"type"`
-				} `json:"feedback"`
-				ContentOrigin string `json:"contentOrigin"`
-				Privacy       any    `json:"privacy"`
-			} `json:"suggestedResponses"`
-			SpokenText string `json:"spokenText"`
-		} `json:"messages"`
-		FirstNewMessageIndex   int       `json:"firstNewMessageIndex"`
-		SuggestedResponses     any       `json:"suggestedResponses"`
-		ConversationId         string    `json:"conversationId"`
-		RequestId              string    `json:"requestId"`
-		ConversationExpiryTime time.Time `json:"conversationExpiryTime"`
+		Messages               []respMessageStruct `json:"messages"`
+		FirstNewMessageIndex   int                 `json:"firstNewMessageIndex"`
+		SuggestedResponses     any                 `json:"suggestedResponses"`
+		ConversationId         string              `json:"conversationId"`
+		RequestId              string              `json:"requestId"`
+		ConversationExpiryTime time.Time           `json:"conversationExpiryTime"`
 		Telemetry              struct {
 			Metrics   any       `json:"metrics"`
 			StartTime time.Time `json:"startTime"`
@@ -164,6 +86,7 @@ type ResponsePayload struct {
 			Message        string `json:"message"`
 			ServiceVersion string `json:"serviceVersion"`
 		} `json:"result"`
+		Messages []respMessageStruct `json:"messages"`
 	} `json:"item,omitempty"`
 }
 
@@ -181,4 +104,84 @@ type PassResponseStruct struct {
 		ScreenShot string `json:"screenshot"`
 	} `json:"result"`
 	Error string `json:"error"`
+}
+
+type respMessageStruct struct {
+	Text   string `json:"text"`
+	Author string `json:"author"`
+	From   struct {
+		Id   string `json:"id"`
+		Name any    `json:"name"`
+	} `json:"from"`
+	CreatedAt     time.Time `json:"createdAt"`
+	Timestamp     time.Time `json:"timestamp"`
+	Locale        string    `json:"locale"`
+	Market        string    `json:"market"`
+	Region        string    `json:"region"`
+	Location      string    `json:"location"`
+	LocationHints []struct {
+		Country           string `json:"country"`
+		CountryConfidence int    `json:"countryConfidence"`
+		State             string `json:"state"`
+		City              string `json:"city"`
+		CityConfidence    int    `json:"cityConfidence"`
+		ZipCode           string `json:"zipCode"`
+		TimeZoneOffset    int    `json:"timeZoneOffset"`
+		Dma               int    `json:"dma"`
+		SourceType        int    `json:"sourceType"`
+		Center            struct {
+			Latitude  float64 `json:"latitude"`
+			Longitude float64 `json:"longitude"`
+			Height    any     `json:"height"`
+		} `json:"center"`
+		RegionType int `json:"regionType"`
+	} `json:"locationHints"`
+	MessageId uuid.UUID `json:"messageId"`
+	RequestId uuid.UUID `json:"requestId"`
+	Offense   string    `json:"offense"`
+	Feedback  struct {
+		Tag       any    `json:"tag"`
+		UpdatedOn any    `json:"updatedOn"`
+		Type      string `json:"type"`
+	} `json:"feedback"`
+	ContentOrigin string `json:"contentOrigin"`
+	Privacy       any    `json:"privacy"`
+	InputMethod   string `json:"inputMethod"`
+	HiddenText    string `json:"hiddenText"`
+	MessageType   string `json:"messageType"`
+	AdaptiveCards []struct {
+		Type    string `json:"type"`
+		Version string `json:"version"`
+		Body    []struct {
+			Type    string `json:"type"`
+			Version string `json:"version"`
+			Body    []struct {
+				Type string `json:"type"`
+				Text string `json:"text"`
+				Wrap bool   `json:"wrap"`
+			}
+		} `json:"body"`
+	} `json:"adaptiveCards"`
+	SourceAttributions []struct {
+		ProviderDisplayName string `json:"providerDisplayName"`
+		SeeMoreUrl          string `json:"seeMoreUrl"`
+		SearchQuery         string `json:"searchQuery"`
+	} `json:"sourceAttributions"`
+	SuggestedResponses []struct {
+		Text        string    `json:"text"`
+		Author      string    `json:"author"`
+		CreatedAt   time.Time `json:"createdAt"`
+		Timestamp   time.Time `json:"timestamp"`
+		MessageId   string    `json:"messageId"`
+		MessageType string    `json:"messageType"`
+		Offense     string    `json:"offense"`
+		Feedback    struct {
+			Tag       any    `json:"tag"`
+			UpdatedOn any    `json:"updatedOn"`
+			Type      string `json:"type"`
+		} `json:"feedback"`
+		ContentOrigin string `json:"contentOrigin"`
+		Privacy       any    `json:"privacy"`
+	} `json:"suggestedResponses"`
+	SpokenText string `json:"spokenText"`
 }

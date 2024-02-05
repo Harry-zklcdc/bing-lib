@@ -199,29 +199,34 @@ func (chat *Chat) optionsSetsHandler(systemContext []SystemContext) []string {
 		"responsible_ai_policy_235",
 		"enablemm",
 		"dv3sugg",
-		"autosave",
+		"iyxapbing",
+		"iycapbing",
+		"enable_user_consent",
+		"fluxmemcst",
+		"gldcl1p",
 		"uquopt",
-		"osbsdrecoff",
-		"fluxcopilot",
-		"fdwtlst",
-		"fluxprod",
-		"eredirecturl",
+		"langdtwb",
+		"enflst",
+		"enpcktrk",
+		"rcaldictans",
+		"rcaltimeans",
+		"gndbfptlw",
 	}
 	if len(systemContext) > 0 {
-		optionsSets = append(optionsSets, "nojbfedge", "rai278", "enflst", "enpcktrk", "rcaldictans", "rcaltimeans", "nojbfedge")
+		optionsSets = append(optionsSets, "nojbfedge", "rai278")
 	}
 
 	tone := chat.GetStyle()
 	if strings.Contains(tone, "g4t") {
 		optionsSets = append(optionsSets, "dlgpt4t")
 	}
-	// if strings.Contains(tone, PRECISE) {
-	// 	optionsSets = append(optionsSets, "h3precise", "clgalileo", "gencontentv3")
-	// } else if strings.Contains(tone, BALANCED) {
-	// 	optionsSets = append(optionsSets, "galileo", "saharagenconv5")
-	// } else if strings.Contains(tone, CREATIVE) {
-	// 	optionsSets = append(optionsSets, "h3imaginative", "clgalileo", "gencontentv3")
-	// }
+	if strings.Contains(tone, PRECISE) {
+		optionsSets = append(optionsSets, "h3precise", "clgalileo", "gencontentv3")
+	} else if strings.Contains(tone, BALANCED) {
+		optionsSets = append(optionsSets, "galileo", "saharagenconv5")
+	} else if strings.Contains(tone, CREATIVE) {
+		optionsSets = append(optionsSets, "h3imaginative", "clgalileo", "gencontentv3")
+	}
 	return optionsSets
 }
 
@@ -252,29 +257,27 @@ func (chat *Chat) sliceIdsHandler(systemContext []SystemContext) []string {
 		}
 	} else {
 		return []string{
-			"techpillscf",
-			"gbaa",
-			"gba",
-			"gbapa",
-			"codecreator",
-			"dlidcf",
+			"qnacnc",
+			"fluxsunoall",
+			"mobfdbk",
+			"v6voice",
+			"cmcallcf",
 			"specedge",
-			"preall15",
-			"suppsm240-t",
-			"translref",
-			"ardsw_1_9_9",
-			"fluxnosearchc",
-			"fluxnosearch",
-			"1115rai289",
-			"1119backoss0",
+			"tts5",
+			"advperfcon",
+			"designer2cf",
+			"defred",
+			"msgchkcf",
+			"thrdnav",
+			"0212boptpsc",
+			"116langwb",
 			"124multi2t",
-			"1129gpt4ts0",
-			"kchero50cf",
-			"cacfastapis",
-			"cacdupereccf",
-			"cacmuidarb",
-			"cacfrwebt2cf",
-			"sswebtop2cf",
+			"927storev2s0",
+			"0131dv1",
+			"1pgptwdes",
+			"0131gndbfpr",
+			"brndupdtcf",
+			"enter4nl",
 		}
 	}
 }

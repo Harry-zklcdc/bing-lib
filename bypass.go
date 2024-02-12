@@ -23,7 +23,7 @@ func Bypass(bypassServer, cookie, iframeid, IG, convId, rid, T string) (passResp
 	}
 
 	c := request.NewRequest()
-	c.SetMethod("POST").SetBody(bytes.NewReader(passResq)).SetHeader("Content-Type", "application/json").SetHeader("User-Agent", userAgent).Do()
+	c.SetMethod("POST").SetUrl(bypassServer).SetBody(bytes.NewReader(passResq)).SetHeader("Content-Type", "application/json").SetHeader("User-Agent", userAgent).Do()
 
 	err = json.Unmarshal(c.Result.Body, &passResp)
 	if err != nil {

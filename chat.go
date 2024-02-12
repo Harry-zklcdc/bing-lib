@@ -29,6 +29,8 @@ const (
 	CREATIVE_G4T_OFFLINE = "Creative-g4t-offline" // 创造 GPT4-Turbo, 不联网搜索
 )
 
+var ChatModels = [12]string{BALANCED, BALANCED_OFFLINE, CREATIVE, CREATIVE_OFFLINE, PRECISE, PRECISE_OFFLINE, BALANCED_G4T, BALANCED_G4T_OFFLINE, CREATIVE_G4T, CREATIVE_G4T_OFFLINE, PRECISE_G4T, PRECISE_G4T_OFFLINE}
+
 const (
 	bingCreateConversationUrl = "%s/turing/conversation/create?bundleVersion=1.1467.6"
 	sydneyChatHubUrl          = "%s/sydney/ChatHub?sec_access_token=%s"

@@ -3,21 +3,12 @@ package binglib
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"net/http"
 
-	"github.com/Harry-zklcdc/bing-lib/lib/aes"
 	"github.com/Harry-zklcdc/bing-lib/lib/request"
 )
 
-func Bypass(bypassServer, cookie, iframeid, IG, convId, rid string) (passResp PassResponseStruct, status int, err error) {
-	if IG == "" || len(IG) < 32 {
-		return passResp, http.StatusBadRequest, errors.New("IG too short")
-	}
-	T, err := aes.Encrypt("Harry-zklcdc/go-proxy-bingai", IG)
-	if err != nil {
-		return passResp, http.StatusInternalServerError, err
-	}
+func Bypass(bypassServer, cookie, iframeid, IG, convId, rid, T string) (passResp PassResponseStruct, status int, err error) {
 	passRequest := passRequestStruct{
 		Cookies:  cookie,
 		Iframeid: iframeid,

@@ -91,11 +91,12 @@ type ResponsePayload struct {
 }
 
 type passRequestStruct struct {
-	IG       string `json:"IG,omitempty"`
+	IG       string `json:"IG"`
 	Cookies  string `json:"cookies"`
 	Iframeid string `json:"iframeid,omitempty"`
 	ConvId   string `json:"convId,omitempty"`
 	RId      string `json:"rid,omitempty"`
+	T        string `json:"T"`
 }
 
 type PassResponseStruct struct {

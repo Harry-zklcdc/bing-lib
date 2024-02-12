@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Harry-zklcdc/bing-lib/lib/aes"
 	"github.com/Harry-zklcdc/bing-lib/lib/hex"
 	"github.com/Harry-zklcdc/bing-lib/lib/request"
 	"github.com/gorilla/websocket"
@@ -491,7 +492,12 @@ func (chat *Chat) Chat(prompt, msg string) (string, error) {
 					text = "Unknown error."
 				}
 				if chat.GetBypassServer() != "" && !verifyStatus {
-					r, status, err := Bypass(chat.GetBypassServer(), chat.GetCookies(), "local-gen-"+hex.NewUUID(), hex.NewUpperHex(32), chat.GetChatHub().GetConversationId(), msgId)
+					IG := hex.NewUpperHex(32)
+					T, err := aes.Encrypt("Harry-zklcdc/go-proxy-bingai", IG)
+					if err != nil {
+						break
+					}
+					r, status, err := Bypass(chat.GetBypassServer(), chat.GetCookies(), "local-gen-"+hex.NewUUID(), IG, chat.GetChatHub().GetConversationId(), msgId, T)
 					if err != nil || status != http.StatusAccepted {
 						break
 					}
@@ -573,7 +579,13 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 			if resp.Item.Result.Value == "CaptchaChallenge" || resp.Item.Result.Value == "Throttled" {
 				if chat.GetBypassServer() != "" && !verifyStatus {
 					c <- "Bypassing... Please Wait.\n\n"
-					r, status, err := Bypass(chat.GetBypassServer(), chat.GetCookies(), "local-gen-"+hex.NewUUID(), hex.NewUpperHex(32), chat.GetChatHub().GetConversationId(), msgId)
+					IG := hex.NewUpperHex(32)
+					T, err := aes.Encrypt("Harry-zklcdc/go-proxy-bingai", IG)
+					if err != nil {
+						c <- "Bypass Fail!"
+						break
+					}
+					r, status, err := Bypass(chat.GetBypassServer(), chat.GetCookies(), "local-gen-"+hex.NewUUID(), IG, chat.GetChatHub().GetConversationId(), msgId, T)
 					if err != nil || status != http.StatusAccepted {
 						c <- "Bypass Fail!"
 						break

@@ -498,7 +498,7 @@ func (chat *Chat) Chat(prompt, msg string) (string, error) {
 						break
 					}
 					r, status, err := Bypass(chat.GetBypassServer(), chat.GetCookies(), "local-gen-"+hex.NewUUID(), IG, chat.GetChatHub().GetConversationId(), msgId, T)
-					if err != nil || status != http.StatusAccepted {
+					if err != nil || status != http.StatusOK {
 						break
 					}
 					verifyStatus = true
@@ -586,7 +586,7 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 						break
 					}
 					r, status, err := Bypass(chat.GetBypassServer(), chat.GetCookies(), "local-gen-"+hex.NewUUID(), IG, chat.GetChatHub().GetConversationId(), msgId, T)
-					if err != nil || status != http.StatusAccepted {
+					if err != nil || status != http.StatusOK {
 						c <- "Bypass Fail!"
 						break
 					}

@@ -3,43 +3,40 @@ package binglib
 import (
 	"bytes"
 	"encoding/json"
-	"io"
+	"errors"
 	"net/http"
-	"time"
+
+	"github.com/Harry-zklcdc/bing-lib/lib/aes"
+	"github.com/Harry-zklcdc/bing-lib/lib/request"
 )
 
-func Bypass(bypassServer, cookie, iframeid, IG, convId, rid string) (passResp PassResponseStruct, err error) {
+func Bypass(bypassServer, cookie, iframeid, IG, convId, rid string) (passResp PassResponseStruct, status int, err error) {
+	if IG == "" || len(IG) < 32 {
+		return passResp, http.StatusBadRequest, errors.New("IG too short")
+	}
+	T, err := aes.Encrypt("Harry-zklcdc/go-proxy-bingai", IG)
+	if err != nil {
+		return passResp, http.StatusInternalServerError, err
+	}
 	passRequest := passRequestStruct{
 		Cookies:  cookie,
 		Iframeid: iframeid,
 		IG:       IG,
 		ConvId:   convId,
 		RId:      rid,
+		T:        T,
 	}
 	passResq, err := json.Marshal(passRequest)
 	if err != nil {
-		return passResp, err
+		return passResp, http.StatusInternalServerError, err
 	}
 
-	client := &http.Client{
-		Timeout: time.Duration(30 * time.Second),
-	}
-	req, err := http.NewRequest("POST", bypassServer, bytes.NewReader(passResq))
-	if err != nil {
-		return passResp, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", userAgent)
-	resp, err := client.Do(req)
-	if err != nil {
-		return passResp, err
-	}
-	defer resp.Body.Close()
-	body, _ := io.ReadAll(resp.Body)
+	c := request.NewRequest()
+	c.SetMethod("POST").SetBody(bytes.NewReader(passResq)).SetHeader("Content-Type", "application/json").SetHeader("User-Agent", userAgent).Do()
 
-	err = json.Unmarshal(body, &passResp)
+	err = json.Unmarshal(c.Result.Body, &passResp)
 	if err != nil {
-		return passResp, err
+		return passResp, http.StatusInternalServerError, err
 	}
-	return passResp, nil
+	return passResp, c.Result.Status, nil
 }

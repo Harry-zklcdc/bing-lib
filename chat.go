@@ -491,8 +491,8 @@ func (chat *Chat) Chat(prompt, msg string) (string, error) {
 					text = "Unknown error."
 				}
 				if chat.GetBypassServer() != "" && !verifyStatus {
-					r, err := Bypass(chat.GetBypassServer(), chat.GetCookies(), "local-gen-"+hex.NewUUID(), hex.NewUpperHex(32), chat.GetChatHub().GetConversationId(), msgId)
-					if err != nil {
+					r, status, err := Bypass(chat.GetBypassServer(), chat.GetCookies(), "local-gen-"+hex.NewUUID(), hex.NewUpperHex(32), chat.GetChatHub().GetConversationId(), msgId)
+					if err != nil || status != http.StatusAccepted {
 						break
 					}
 					verifyStatus = true
@@ -573,8 +573,8 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 			if resp.Item.Result.Value == "CaptchaChallenge" || resp.Item.Result.Value == "Throttled" {
 				if chat.GetBypassServer() != "" && !verifyStatus {
 					c <- "Bypassing... Please Wait.\n\n"
-					r, err := Bypass(chat.GetBypassServer(), chat.GetCookies(), "local-gen-"+hex.NewUUID(), hex.NewUpperHex(32), chat.GetChatHub().GetConversationId(), msgId)
-					if err != nil {
+					r, status, err := Bypass(chat.GetBypassServer(), chat.GetCookies(), "local-gen-"+hex.NewUUID(), hex.NewUpperHex(32), chat.GetChatHub().GetConversationId(), msgId)
+					if err != nil || status != http.StatusAccepted {
 						c <- "Bypass Fail!"
 						break
 					}

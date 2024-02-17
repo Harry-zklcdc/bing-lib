@@ -7,7 +7,7 @@ import (
 
 var base58 = []byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz")
 
-func Base58Encoding(str string) string {
+func Encoding(str string) string {
 	strByte := []byte(str)
 	strTen := big.NewInt(0).SetBytes(strByte)
 
@@ -31,7 +31,7 @@ func Base58Encoding(str string) string {
 	return string(ReverseModSlice)
 }
 
-func Base58Decoding(str string) string {
+func Decoding(str string) string {
 	strByte := []byte(str)
 	ret := big.NewInt(0)
 	for _, byteElem := range strByte {

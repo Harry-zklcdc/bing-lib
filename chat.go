@@ -29,16 +29,16 @@ const (
 	BALANCED_G4T_OFFLINE = "Balanced-g4t-offline" // 平衡 GPT4-Turbo, 不联网搜索
 	CREATIVE_G4T_OFFLINE = "Creative-g4t-offline" // 创造 GPT4-Turbo, 不联网搜索
 
-	PRECISE_18K          = "Precise-18k"          // 精准
-	BALANCED_18K         = "Balanced-18k"         // 平衡
-	CREATIVE_18K         = "Creative-18k"         // 创造
-	PRECISE_18K_OFFLINE  = "Precise-18k-offline"  // 精准, 不联网搜索
-	BALANCED_18K_OFFLINE = "Balanced-18k-offline" // 平衡, 不联网搜索
-	CREATIVE_18K_OFFLINE = "Creative-18k-offline" // 创造, 不联网搜索
+	PRECISE_18K          = "Precise-18k"          // 精准, 18k上下文
+	BALANCED_18K         = "Balanced-18k"         // 平衡, 18k上下文
+	CREATIVE_18K         = "Creative-18k"         // 创造, 18k上下文
+	PRECISE_18K_OFFLINE  = "Precise-18k-offline"  // 精准, 18k上下文, 不联网搜索
+	BALANCED_18K_OFFLINE = "Balanced-18k-offline" // 平衡, 18k上下文, 不联网搜索
+	CREATIVE_18K_OFFLINE = "Creative-18k-offline" // 创造, 18k上下文, 不联网搜索
 
-	PRECISE_G4T_18K  = "Precise-g4t-18k"  // 精准 GPT4-Turbo
-	BALANCED_G4T_18K = "Balanced-g4t-18k" // 平衡 GPT4-Turbo
-	CREATIVE_G4T_18K = "Creative-g4t-18k" // 创造 GPT4-Turbo
+	PRECISE_G4T_18K  = "Precise-g4t-18k"  // 精准 GPT4-Turbo, 18k上下文
+	BALANCED_G4T_18K = "Balanced-g4t-18k" // 平衡 GPT4-Turbo, 18k上下文
+	CREATIVE_G4T_18K = "Creative-g4t-18k" // 创造 GPT4-Turbo, 18k上下文
 )
 
 var ChatModels = [21]string{BALANCED, BALANCED_OFFLINE, CREATIVE, CREATIVE_OFFLINE, PRECISE, PRECISE_OFFLINE, BALANCED_G4T, BALANCED_G4T_OFFLINE, CREATIVE_G4T, CREATIVE_G4T_OFFLINE, PRECISE_G4T, PRECISE_G4T_OFFLINE,

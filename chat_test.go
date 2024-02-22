@@ -92,6 +92,42 @@ func TestSydney(t *testing.T) {
 	t.Log(r)
 }
 
+func TestChatG4t(t *testing.T) {
+	err := c.NewConversation()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	c.SetStyle(binglib.CREATIVE_G4T)
+
+	r, err := c.Chat("", "阿巴阿巴")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(r)
+
+	c = binglib.NewChat(cookieChat)
+}
+
+func TestChat18k(t *testing.T) {
+	err := c.NewConversation()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	c.SetStyle(binglib.CREATIVE_18K)
+
+	r, err := c.Chat("", "阿巴阿巴")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(r)
+
+	c = binglib.NewChat(cookieChat)
+}
+
 func TestMsgComposer(t *testing.T) {
 	msgs := []binglib.Message{
 		{

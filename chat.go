@@ -28,9 +28,21 @@ const (
 	PRECISE_G4T_OFFLINE  = "Precise-g4t-offline"  // 精准 GPT4-Turbo, 不联网搜索
 	BALANCED_G4T_OFFLINE = "Balanced-g4t-offline" // 平衡 GPT4-Turbo, 不联网搜索
 	CREATIVE_G4T_OFFLINE = "Creative-g4t-offline" // 创造 GPT4-Turbo, 不联网搜索
+
+	PRECISE_18K          = "Precise-18k"          // 精准
+	BALANCED_18K         = "Balanced-18k"         // 平衡
+	CREATIVE_18K         = "Creative-18k"         // 创造
+	PRECISE_18K_OFFLINE  = "Precise-18k-offline"  // 精准, 不联网搜索
+	BALANCED_18K_OFFLINE = "Balanced-18k-offline" // 平衡, 不联网搜索
+	CREATIVE_18K_OFFLINE = "Creative-18k-offline" // 创造, 不联网搜索
+
+	PRECISE_G4T_18K  = "Precise-18k-g4t"  // 精准 GPT4-Turbo
+	BALANCED_G4T_18K = "Balanced-18k-g4t" // 平衡 GPT4-Turbo
+	CREATIVE_G4T_18K = "Creative-18k-g4t" // 创造 GPT4-Turbo
 )
 
-var ChatModels = [12]string{BALANCED, BALANCED_OFFLINE, CREATIVE, CREATIVE_OFFLINE, PRECISE, PRECISE_OFFLINE, BALANCED_G4T, BALANCED_G4T_OFFLINE, CREATIVE_G4T, CREATIVE_G4T_OFFLINE, PRECISE_G4T, PRECISE_G4T_OFFLINE}
+var ChatModels = [21]string{BALANCED, BALANCED_OFFLINE, CREATIVE, CREATIVE_OFFLINE, PRECISE, PRECISE_OFFLINE, BALANCED_G4T, BALANCED_G4T_OFFLINE, CREATIVE_G4T, CREATIVE_G4T_OFFLINE, PRECISE_G4T, PRECISE_G4T_OFFLINE,
+	BALANCED_18K, BALANCED_18K_OFFLINE, CREATIVE_18K, CREATIVE_18K_OFFLINE, PRECISE_18K, PRECISE_18K_OFFLINE, BALANCED_G4T_18K, CREATIVE_G4T_18K, PRECISE_G4T_18K}
 
 const (
 	bingCreateConversationUrl = "%s/turing/conversation/create?bundleVersion=1.1467.6"
@@ -223,6 +235,9 @@ func (chat *Chat) optionsSetsHandler(systemContext []SystemContext) []string {
 	if strings.Contains(tone, "g4t") {
 		optionsSets = append(optionsSets, "dlgpt4t")
 	}
+	if strings.Contains(tone, "18k") {
+		optionsSets = append(optionsSets, "prjupy")
+	}
 	if strings.Contains(tone, PRECISE) {
 		optionsSets = append(optionsSets, "h3precise", "clgalileo", "gencontentv3")
 	} else if strings.Contains(tone, BALANCED) {
@@ -381,7 +396,7 @@ func (chat *Chat) requestPayloadHandler(msg string, optionsSets []string, sliceI
 					},
 				},
 				// "conversationSignature": chat.GetChatHub().GetConversationSignature(),
-				"tone":           strings.ReplaceAll(strings.ReplaceAll(tone, "-g4t", ""), "-offline", ""),
+				"tone":           strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(tone, "-18k", ""), "-g4t", ""), "-offline", ""),
 				"spokenTextMode": "None",
 				"participant": map[string]any{
 					"id": chat.GetChatHub().GetClientId(),

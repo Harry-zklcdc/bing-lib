@@ -241,7 +241,11 @@ func (chat *Chat) optionsSetsHandler(systemContext []SystemContext) []string {
 	if strings.Contains(tone, PRECISE) {
 		optionsSets = append(optionsSets, "h3precise", "clgalileo", "gencontentv3")
 	} else if strings.Contains(tone, BALANCED) {
-		optionsSets = append(optionsSets, "galileo", "saharagenconv5")
+		if strings.Contains(tone, "18k") {
+			optionsSets = append(optionsSets, "clgalileo", "saharagenconv5")
+		} else {
+			optionsSets = append(optionsSets, "galileo", "saharagenconv5")
+		}
 	} else if strings.Contains(tone, CREATIVE) {
 		optionsSets = append(optionsSets, "h3imaginative", "clgalileo", "gencontentv3")
 	}

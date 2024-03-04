@@ -562,110 +562,25 @@ func (chat *Chat) wsHandler(data map[string]any) (*websocket.Conn, error) {
 }
 
 func (chat *Chat) Chat(prompt, msg string, image ...string) (string, error) {
-	imageUrl := ""
-	if len(image) > 0 {
-		url, err := chat.imageUploadHandler(image[0])
-		if err != nil {
-			return "", err
-		}
-		imageUrl = url
-	}
-	systemContext := chat.systemContextHandler(prompt)
-	optionsSets := chat.optionsSetsHandler(systemContext)
-	sliceIds := chat.sliceIdsHandler(systemContext)
-	plugins := chat.pluginHandler(&optionsSets)
-	data, msgId := chat.requestPayloadHandler(msg, optionsSets, sliceIds, plugins, systemContext, imageUrl)
-
-	ws, err := chat.wsHandler(data)
-	if err != nil {
-		return "", err
-	}
-	defer ws.Close()
-
-	text := ""
-	verifyStatus := false
-
-	i := 0
-	for {
-		if i >= 15 {
-			err := ws.WriteMessage(websocket.TextMessage, []byte("{\"type\":6}"+spilt))
-			if err != nil {
+	c := make(chan string)
+	go func() {
+		tmp := ""
+		for {
+			tmp = <-c
+			if tmp == "EOF" {
 				break
 			}
-			i = 0
 		}
-		resp := new(ResponsePayload)
-		err = ws.ReadJSON(&resp)
-		if err != nil {
-			if err.Error() != "EOF" {
-				return text, err
-			} else {
-				return text, nil
-			}
-		}
-		if resp.Type == 2 {
-			if resp.Item.Result.Value == "CaptchaChallenge" || resp.Item.Result.Value == "Throttled" {
-				if resp.Item.Result.Value == "CaptchaChallenge" {
-					text = "User needs to solve CAPTCHA to continue."
-				} else if resp.Item.Result.Value == "Throttled" {
-					text = "Request is throttled."
-				} else {
-					text = "Unknown error."
-				}
-				if chat.GetBypassServer() != "" && !verifyStatus {
-					IG := hex.NewUpperHex(32)
-					T, err := aes.Encrypt("Harry-zklcdc/go-proxy-bingai", IG)
-					if err != nil {
-						break
-					}
-					r, status, err := Bypass(chat.GetBypassServer(), chat.GetCookies(), "local-gen-"+hex.NewUUID(), IG, chat.GetChatHub().GetConversationId(), msgId, T)
-					if err != nil || status != http.StatusOK {
-						break
-					}
-					verifyStatus = true
-					chat.SetCookies(r.Result.Cookies)
-					ws.Close()
-					data["invocationId"] = "1"
-					ws, err = chat.wsHandler(data)
-					if err != nil {
-						break
-					}
-					defer ws.Close()
-				} else {
-					break
-				}
-			} else if resp.Item.Result.Value == "Success" {
-				if len(resp.Item.Messages) > 1 {
-					for i, v := range resp.Item.Messages[len(resp.Item.Messages)-1].SourceAttributions {
-						text += "\n[^" + strconv.Itoa(i+1) + "^]: [" + v.ProviderDisplayName + "](" + v.SeeMoreUrl + ")"
-					}
-				}
-				break
-			}
+	}()
 
-		} else if resp.Type == 1 {
-			if len(resp.Arguments) > 0 {
-				if len(resp.Arguments[0].Messages) > 0 {
-					text = resp.Arguments[0].Messages[0].Text
-					// fmt.Println(resp.Arguments[0].Messages[0].Text + "\n\n")
-				}
-			}
-		} else if resp.Type == 3 {
-			break
-		} else if resp.Type == 6 {
-			err := ws.WriteMessage(websocket.TextMessage, []byte("{\"type\":6}"+spilt))
-			if err != nil {
-				break
-			}
-			i = 0
-		}
-		i++
-	}
-
-	return text, nil
+	return chat.chatHandler(prompt, msg, c, image...)
 }
 
 func (chat *Chat) ChatStream(prompt, msg string, c chan string, image ...string) (string, error) {
+	return chat.chatHandler(prompt, msg, c, image...)
+}
+
+func (chat *Chat) chatHandler(prompt, msg string, c chan string, image ...string) (string, error) {
 	imageUrl := ""
 	if len(image) > 0 {
 		url, err := chat.imageUploadHandler(image[0])
@@ -705,10 +620,10 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string, image ...string)
 		if err != nil {
 			if err.Error() != "EOF" {
 				c <- "EOF"
-				return "", err
+				return text, err
 			} else {
 				c <- "EOF"
-				return "", nil
+				return text, nil
 			}
 		}
 		if resp.Type == 2 {
@@ -738,9 +653,12 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string, image ...string)
 					defer ws.Close()
 				} else {
 					if resp.Item.Result.Value == "CaptchaChallenge" {
+						text = "User needs to solve CAPTCHA to continue."
 						c <- "User needs to solve CAPTCHA to continue."
 					} else if resp.Item.Result.Value == "Throttled" {
+						text = "Request is throttled."
 						c <- "Request is throttled."
+						text = "Unknown error."
 					} else {
 						c <- "Unknown error."
 					}
@@ -750,6 +668,7 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string, image ...string)
 				if len(resp.Item.Messages) > 1 {
 					for i, v := range resp.Item.Messages[len(resp.Item.Messages)-1].SourceAttributions {
 						c <- "\n[^" + strconv.Itoa(i+1) + "^]: [" + v.ProviderDisplayName + "](" + v.SeeMoreUrl + ")"
+						text += "\n[^" + strconv.Itoa(i+1) + "^]: [" + v.ProviderDisplayName + "](" + v.SeeMoreUrl + ")"
 					}
 				}
 				break

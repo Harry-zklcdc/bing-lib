@@ -179,7 +179,7 @@ func (chat *Chat) NewConversation() error {
 	return nil
 }
 
-func (chat *Chat) MsgComposer(msgs []Message) (prompt string, msg string) {
+func (chat *Chat) MsgComposer(msgs []Message) (prompt string, msg string, image string) {
 	systemMsgNum := 0
 	for _, t := range msgs {
 		if t.Role == "system" {
@@ -187,31 +187,58 @@ func (chat *Chat) MsgComposer(msgs []Message) (prompt string, msg string) {
 		}
 	}
 	if len(msgs)-systemMsgNum == 1 {
-		return "", msgs[0].Content
+		switch msgs[0].Content.(type) {
+		case string:
+			return "", msgs[0].Content.(string), ""
+		default:
+			tmp := ""
+			for _, v := range msgs[0].Content.([]ContentPart) {
+				if strings.ToLower(v.Type) == "text" {
+					tmp += v.Text
+				} else if strings.ToLower(v.Type) == "image" {
+					image = v.ImageUrl.Url
+				}
+			}
+			return "", tmp, image
+		}
 	}
 
 	var lastRole string
 	for _, t := range msgs {
+		tmp := ""
+		switch t.Content.(type) {
+		case string:
+			tmp = t.Content.(string)
+		default:
+			tmp = ""
+			for _, v := range msgs[0].Content.([]ContentPart) {
+				if strings.ToLower(v.Type) == "text" {
+					tmp += v.Text
+				} else if strings.ToLower(v.Type) == "image" {
+					image = v.ImageUrl.Url
+				}
+			}
+		}
 		if lastRole == t.Role {
-			msg += "\n" + t.Content
+			msg += "\n" + tmp
 			continue
 		} else if lastRole != "" {
 			msg += "\n\n"
 		}
 		switch t.Role {
 		case "system":
-			prompt += t.Content
+			prompt += tmp
 		case "user":
-			msg += "`me`:\n" + t.Content
+			msg += "`me`:\n" + tmp
 		case "assistant":
-			msg += "`you`:\n" + t.Content
+			msg += "`you`:\n" + tmp
 		}
 		if t.Role != "system" {
 			lastRole = t.Role
 		}
 	}
 	msg += "\n\n`you`:"
-	return prompt, msg
+	return prompt, msg, image
 }
 
 func (chat *Chat) optionsSetsHandler(systemContext []SystemContext) []string {

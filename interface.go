@@ -31,7 +31,15 @@ type Image struct {
 
 type Message struct {
 	Role    string `json:"role,omitempty"`
-	Content string `json:"content,omitempty"`
+	Content any    `json:"content"`
+}
+
+type ContentPart struct {
+	Type     string `json:"type"`
+	Text     string `json:"text,omitempty"`
+	ImageUrl struct {
+		Url string `json:"url,omitempty"`
+	} `json:"imageUrl,omitempty"`
 }
 
 type ChatHub struct {

@@ -186,3 +186,8 @@ type respMessageStruct struct {
 	} `json:"suggestedResponses"`
 	SpokenText string `json:"spokenText"`
 }
+
+type imageUploadStruct struct {
+	BlobId          string `json:"blobId"`
+	ProcessedBlobId string `json:"processedBlobId"`
+}

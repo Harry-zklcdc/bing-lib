@@ -1,8 +1,10 @@
 package binglib
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -47,6 +49,8 @@ var ChatModels = [21]string{BALANCED, BALANCED_OFFLINE, CREATIVE, CREATIVE_OFFLI
 const (
 	bingCreateConversationUrl = "%s/turing/conversation/create?bundleVersion=1.1467.6"
 	sydneyChatHubUrl          = "%s/sydney/ChatHub?sec_access_token=%s"
+	imagesKblob               = "%s/images/kblob"
+	imageUploadUrl            = "%s/images/blob?bcid=%s"
 
 	spilt = "\x1e"
 )
@@ -119,6 +123,10 @@ func (chat *Chat) GetStyle() string {
 	return chat.GetChatHub().GetStyle()
 }
 
+func (chat *Chat) GetTone() string {
+	return strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(chat.GetStyle(), "-18k", ""), "-g4t", ""), "-offline", "")
+}
+
 func (chat *Chat) GetBingBaseUrl() string {
 	return chat.BingBaseUrl
 }
@@ -141,7 +149,7 @@ func (chat *Chat) NewConversation() error {
 		SetCookies(chat.cookies).
 		SetHeader("Accept", "application/json").
 		SetHeader("Accept-Language", "en-US;q=0.9").
-		SetHeader("Referer", "https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx").
+		SetHeader("Referer", "https://www.bing.com/chat?q=Bing+AI&showconv=1&FORM=hpcodx").
 		SetHeader("Sec-Ch-Ua", "\"Not_A Brand\";v=\"8\", \"Chromium\";v=\"120\", \"Microsoft Edge\";v=\"120\"").
 		SetHeader("Sec-Ch-Ua-Arch", "\"x86\"").
 		SetHeader("Sec-Ch-Ua-Bitness", "\"64\"").
@@ -329,9 +337,8 @@ func (chat *Chat) systemContextHandler(prompt string) []SystemContext {
 	return systemContext
 }
 
-func (chat *Chat) requestPayloadHandler(msg string, optionsSets []string, sliceIds []string, plugins []Plugins, systemContext []SystemContext) (data map[string]any, msgId string) {
+func (chat *Chat) requestPayloadHandler(msg string, optionsSets []string, sliceIds []string, plugins []Plugins, systemContext []SystemContext, imageUrl string) (data map[string]any, msgId string) {
 	msgId = hex.NewUUID()
-	tone := chat.GetStyle()
 
 	data = map[string]any{
 		"arguments": []any{
@@ -371,36 +378,9 @@ func (chat *Chat) requestPayloadHandler(msg string, optionsSets []string, sliceI
 					"uprofgen",
 				},
 				"requestId": msgId,
-				"message": map[string]any{
-					"author":        "user",
-					"inputMethod":   "Keyboard",
-					"text":          msg,
-					"messageType":   "Chat",
-					"requestId":     msgId,
-					"messageId":     msgId,
-					"userIpAddress": chat.GetXFF(),
-					"locale":        "zh-CN",
-					"market":        "en-US",
-					"region":        "US",
-					"location":      "lat:47.639557;long:-122.128159;re=1000m;",
-					"locationHints": []any{
-						map[string]any{
-							"country":           "United States",
-							"state":             "California",
-							"city":              "Los Angeles",
-							"timezoneoffset":    8,
-							"countryConfidence": 8,
-							"Center": map[string]any{
-								"Latitude":  78.4156,
-								"Longitude": -101.4458,
-							},
-							"RegionType": 2,
-							"SourceType": 1,
-						},
-					},
-				},
+				"message":   chat.requestMessagePayloadHandler(msg, msgId, imageUrl),
 				// "conversationSignature": chat.GetChatHub().GetConversationSignature(),
-				"tone":           strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(tone, "-18k", ""), "-g4t", ""), "-offline", ""),
+				"tone":           chat.GetTone(),
 				"spokenTextMode": "None",
 				"participant": map[string]any{
 					"id": chat.GetChatHub().GetClientId(),
@@ -416,6 +396,120 @@ func (chat *Chat) requestPayloadHandler(msg string, optionsSets []string, sliceI
 	return
 }
 
+func (chat *Chat) requestMessagePayloadHandler(msg string, msgId string, imageUrl string) map[string]any {
+	if imageUrl != "" {
+		return map[string]any{
+			"author":           "user",
+			"inputMethod":      "Keyboard",
+			"imageUrl":         imageUrl,
+			"originalImageUrl": imageUrl,
+			"text":             msg,
+			"messageType":      "Chat",
+			"requestId":        msgId,
+			"messageId":        msgId,
+			"userIpAddress":    chat.GetXFF(),
+			"locale":           "zh-CN",
+			"market":           "en-US",
+			"region":           "US",
+			"location":         "lat:47.639557;long:-122.128159;re=1000m;",
+			"locationHints": []any{
+				map[string]any{
+					"country":           "United States",
+					"state":             "California",
+					"city":              "Los Angeles",
+					"timezoneoffset":    8,
+					"countryConfidence": 8,
+					"Center": map[string]any{
+						"Latitude":  78.4156,
+						"Longitude": -101.4458,
+					},
+					"RegionType": 2,
+					"SourceType": 1,
+				},
+			},
+		}
+	}
+
+	return map[string]any{
+		"author":        "user",
+		"inputMethod":   "Keyboard",
+		"text":          msg,
+		"messageType":   "Chat",
+		"requestId":     msgId,
+		"messageId":     msgId,
+		"userIpAddress": chat.GetXFF(),
+		"locale":        "zh-CN",
+		"market":        "en-US",
+		"region":        "US",
+		"location":      "lat:47.639557;long:-122.128159;re=1000m;",
+		"locationHints": []any{
+			map[string]any{
+				"country":           "United States",
+				"state":             "California",
+				"city":              "Los Angeles",
+				"timezoneoffset":    8,
+				"countryConfidence": 8,
+				"Center": map[string]any{
+					"Latitude":  78.4156,
+					"Longitude": -101.4458,
+				},
+				"RegionType": 2,
+				"SourceType": 1,
+			},
+		},
+	}
+}
+
+func (chat *Chat) imageUploadHandler(image string) (string, error) {
+	if strings.HasPrefix(image, "http") {
+		return image, nil
+	}
+	if strings.Contains(image, "base64,") {
+		image = strings.Split(image, ",")[1]
+		buf := new(bytes.Buffer)
+		bw := multipart.NewWriter(buf)
+		p1, _ := bw.CreateFormField("knowledgeRequest")
+		p1.Write([]byte(fmt.Sprintf("{\"imageInfo\":{},\"knowledgeRequest\":{\"invokedSkills\":[\"ImageById\"],\"subscriptionId\":\"Bing.Chat.Multimodal\",\"invokedSkillsRequestData\":{\"enableFaceBlur\":true},\"convoData\":{\"convoid\":\"%s\",\"convotone\":\"%s\"}}}", chat.GetChatHub().GetConversationId(), chat.GetTone())))
+		p2, _ := bw.CreateFormField("imageBase64")
+		p2.Write([]byte(strings.ReplaceAll(image, " ", "+")))
+		bw.Close()
+		c := request.NewRequest()
+		if chat.GetXFF() != "" {
+			c.SetHeader("X-Forwarded-For", chat.xff)
+		}
+		if chat.GetBingBaseUrl() == bingBaseUrl {
+			c.SetHeader("Host", "www.bing.com")
+			c.SetHeader("Origin", "https://www.bing.com")
+		}
+		c.Post().SetUrl(fmt.Sprintf(imagesKblob, chat.BingBaseUrl)).
+			SetBody(buf).
+			SetUserAgent(userAgent).
+			SetCookies(chat.cookies).
+			SetContentType("multipart/form-data").
+			SetHeader("Referer", "https://www.bing.com/chat?q=Bing+AI&showconv=1&FORM=hpcodx").
+			SetHeader("Sec-Ch-Ua", "\"Not_A Brand\";v=\"8\", \"Chromium\";v=\"120\", \"Microsoft Edge\";v=\"120\"").
+			SetHeader("Sec-Ch-Ua-Arch", "\"x86\"").
+			SetHeader("Sec-Ch-Ua-Bitness", "\"64\"").
+			SetHeader("Sec-Ch-Ua-Full-Version", "\"120.0.2210.133\"").
+			SetHeader("Sec-Ch-Ua-Full-Version-List", "\"Not_A Brand\";v=\"8.0.0.0\", \"Chromium\";v=\"120.0.6099.217\", \"Microsoft Edge\";v=\"120.0.2210.133\"").
+			SetHeader("Sec-Ch-Ua-Mobile", "?0").
+			SetHeader("Sec-Ch-Ua-Model", "\"\"").
+			SetHeader("Sec-Ch-Ua-Platform", "\"Windows\"").
+			SetHeader("Sec-Ch-Ua-Platform-Version", "\"15.0.0\"").
+			SetHeader("Sec-Fetch-Dest", "empty").
+			SetHeader("Sec-Fetch-Mode", "cors").
+			SetHeader("Sec-Fetch-Site", "same-origin").
+			Do()
+		var resp imageUploadStruct
+		err := json.Unmarshal(c.GetBody(), &resp)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf(imageUploadUrl, chat.BingBaseUrl, resp.BlobId), nil
+	}
+	return "", nil
+}
+
 func (chat *Chat) wsHandler(data map[string]any) (*websocket.Conn, error) {
 	dialer := websocket.DefaultDialer
 	dialer.Proxy = http.ProxyFromEnvironment
@@ -425,7 +519,7 @@ func (chat *Chat) wsHandler(data map[string]any) (*websocket.Conn, error) {
 	headers.Set("Cache-Control", "no-cache")
 	headers.Set("Pragma", "no-cache")
 	headers.Set("User-Agent", userAgent)
-	headers.Set("Referer", "https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx")
+	headers.Set("Referer", "https://www.bing.com/chat?q=Bing+AI&showconv=1&FORM=hpcodx")
 	headers.Set("Cookie", chat.cookies)
 	if chat.GetXFF() != "" {
 		headers.Set("X-Forwarded-For", chat.xff)
@@ -467,12 +561,20 @@ func (chat *Chat) wsHandler(data map[string]any) (*websocket.Conn, error) {
 	return ws, nil
 }
 
-func (chat *Chat) Chat(prompt, msg string) (string, error) {
+func (chat *Chat) Chat(prompt, msg string, image ...string) (string, error) {
+	imageUrl := ""
+	if len(image) > 0 {
+		url, err := chat.imageUploadHandler(image[0])
+		if err != nil {
+			return "", err
+		}
+		imageUrl = url
+	}
 	systemContext := chat.systemContextHandler(prompt)
 	optionsSets := chat.optionsSetsHandler(systemContext)
 	sliceIds := chat.sliceIdsHandler(systemContext)
 	plugins := chat.pluginHandler(&optionsSets)
-	data, msgId := chat.requestPayloadHandler(msg, optionsSets, sliceIds, plugins, systemContext)
+	data, msgId := chat.requestPayloadHandler(msg, optionsSets, sliceIds, plugins, systemContext, imageUrl)
 
 	ws, err := chat.wsHandler(data)
 	if err != nil {
@@ -539,8 +641,6 @@ func (chat *Chat) Chat(prompt, msg string) (string, error) {
 					}
 				}
 				break
-			} else {
-				break
 			}
 
 		} else if resp.Type == 1 {
@@ -550,6 +650,14 @@ func (chat *Chat) Chat(prompt, msg string) (string, error) {
 					// fmt.Println(resp.Arguments[0].Messages[0].Text + "\n\n")
 				}
 			}
+		} else if resp.Type == 3 {
+			break
+		} else if resp.Type == 6 {
+			err := ws.WriteMessage(websocket.TextMessage, []byte("{\"type\":6}"+spilt))
+			if err != nil {
+				break
+			}
+			i = 0
 		}
 		i++
 	}
@@ -557,12 +665,21 @@ func (chat *Chat) Chat(prompt, msg string) (string, error) {
 	return text, nil
 }
 
-func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) {
+func (chat *Chat) ChatStream(prompt, msg string, c chan string, image ...string) (string, error) {
+	imageUrl := ""
+	if len(image) > 0 {
+		url, err := chat.imageUploadHandler(image[0])
+		if err != nil {
+			c <- "EOF"
+			return "", err
+		}
+		imageUrl = url
+	}
 	systemContext := chat.systemContextHandler(prompt)
 	optionsSets := chat.optionsSetsHandler(systemContext)
 	sliceIds := chat.sliceIdsHandler(systemContext)
 	plugins := chat.pluginHandler(&optionsSets)
-	data, msgId := chat.requestPayloadHandler(msg, optionsSets, sliceIds, plugins, systemContext)
+	data, msgId := chat.requestPayloadHandler(msg, optionsSets, sliceIds, plugins, systemContext, imageUrl)
 
 	ws, err := chat.wsHandler(data)
 	if err != nil {
@@ -636,8 +753,6 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 					}
 				}
 				break
-			} else {
-				break
 			}
 		} else if resp.Type == 1 {
 			if len(resp.Arguments) > 0 {
@@ -657,6 +772,14 @@ func (chat *Chat) ChatStream(prompt, msg string, c chan string) (string, error) 
 					// fmt.Println(resp.Arguments[0].Messages[0].Text + "\n\n")
 				}
 			}
+		} else if resp.Type == 3 {
+			break
+		} else if resp.Type == 6 {
+			err := ws.WriteMessage(websocket.TextMessage, []byte("{\"type\":6}"+spilt))
+			if err != nil {
+				break
+			}
+			i = 0
 		}
 		i++
 	}

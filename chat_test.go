@@ -128,6 +128,28 @@ func TestChat18k(t *testing.T) {
 	c = binglib.NewChat(cookieChat)
 }
 
+func TestChatVision(t *testing.T) {
+	err := c.NewConversation()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	c.SetStyle(binglib.BALANCED_G4T)
+
+	text := make(chan string)
+	var tmp string
+	go c.ChatStream("", "描述一下这张图片", text, "https://www.bing.com/th?id=OHR.KrugerLeopard_EN-US3980767237_UHD.jpg")
+
+	for {
+		tmp = <-text
+		if tmp == "EOF" {
+			break
+		}
+		t.Log(tmp)
+	}
+}
+
 func TestMsgComposer(t *testing.T) {
 	msgs := []binglib.Message{
 		{

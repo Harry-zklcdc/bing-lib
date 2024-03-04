@@ -190,16 +190,29 @@ func (chat *Chat) MsgComposer(msgs []Message) (prompt string, msg string, image 
 		switch msgs[0].Content.(type) {
 		case string:
 			return "", msgs[0].Content.(string), ""
-		default:
+		case []interface{}:
+			tmp := ""
+			for _, v := range msgs[0].Content.([]interface{}) {
+				value := v.(map[string]interface{})
+				if strings.ToLower(value["type"].(string)) == "text" {
+					tmp += value["text"].(string)
+				} else if strings.ToLower(value["type"].(string)) == "image_url" {
+					image = value["image_url"].(map[string]interface{})["url"].(string)
+				}
+			}
+			return "", tmp, image
+		case []ContentPart:
 			tmp := ""
 			for _, v := range msgs[0].Content.([]ContentPart) {
 				if strings.ToLower(v.Type) == "text" {
 					tmp += v.Text
-				} else if strings.ToLower(v.Type) == "image" {
+				} else if strings.ToLower(v.Type) == "image_url" {
 					image = v.ImageUrl.Url
 				}
 			}
 			return "", tmp, image
+		default:
+			return "", "", ""
 		}
 	}
 
@@ -214,7 +227,7 @@ func (chat *Chat) MsgComposer(msgs []Message) (prompt string, msg string, image 
 			for _, v := range msgs[0].Content.([]ContentPart) {
 				if strings.ToLower(v.Type) == "text" {
 					tmp += v.Text
-				} else if strings.ToLower(v.Type) == "image" {
+				} else if strings.ToLower(v.Type) == "image_url" {
 					image = v.ImageUrl.Url
 				}
 			}

@@ -181,15 +181,35 @@ func (chat *Chat) NewConversation() error {
 
 func (chat *Chat) MsgComposer(msgs []Message) (prompt string, msg string, image string) {
 	systemMsgNum := 0
-	for _, t := range msgs {
+	for index, t := range msgs {
 		if t.Role == "system" {
 			systemMsgNum++
+			switch t.Content.(type) {
+			case string:
+				prompt = t.Content.(string)
+			case []interface{}:
+				for _, v := range t.Content.([]interface{}) {
+					value := v.(map[string]interface{})
+					if strings.ToLower(value["type"].(string)) == "text" {
+						prompt += value["text"].(string)
+					}
+				}
+			case []ContentPart:
+				for _, v := range t.Content.([]ContentPart) {
+					if strings.ToLower(v.Type) == "text" {
+						prompt += v.Text
+					}
+				}
+			default:
+				continue
+			}
+			msgs = append(msgs[0:index], msgs[index+1:]...)
 		}
 	}
 	if len(msgs)-systemMsgNum == 1 {
 		switch msgs[0].Content.(type) {
 		case string:
-			return "", msgs[0].Content.(string), ""
+			return prompt, msgs[0].Content.(string), ""
 		case []interface{}:
 			tmp := ""
 			for _, v := range msgs[0].Content.([]interface{}) {
@@ -200,7 +220,7 @@ func (chat *Chat) MsgComposer(msgs []Message) (prompt string, msg string, image 
 					image = value["image_url"].(map[string]interface{})["url"].(string)
 				}
 			}
-			return "", tmp, image
+			return prompt, tmp, image
 		case []ContentPart:
 			tmp := ""
 			for _, v := range msgs[0].Content.([]ContentPart) {
@@ -210,9 +230,9 @@ func (chat *Chat) MsgComposer(msgs []Message) (prompt string, msg string, image 
 					image = v.ImageUrl.Url
 				}
 			}
-			return "", tmp, image
+			return prompt, tmp, image
 		default:
-			return "", "", ""
+			return prompt, "", ""
 		}
 	}
 

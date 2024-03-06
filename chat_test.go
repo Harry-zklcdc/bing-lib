@@ -172,8 +172,9 @@ func TestMsgComposer(t *testing.T) {
 		},
 	}
 	prompt, msg, image := c.MsgComposer(msgs)
-	t.Log(prompt)
-	t.Log(msg)
+	t.Log("Test 1")
+	t.Log("Prompt: ", prompt)
+	t.Log("Msg: ", msg)
 
 	msgs = []binglib.Message{
 		{
@@ -194,8 +195,9 @@ func TestMsgComposer(t *testing.T) {
 		},
 	}
 	prompt, msg, image = c.MsgComposer(msgs)
-	t.Log(prompt)
-	t.Log(msg)
+	t.Log("Test 2")
+	t.Log("Prompt: ", prompt)
+	t.Log("Msg: ", msg)
 
 	msgs = []binglib.Message{
 		{
@@ -204,8 +206,9 @@ func TestMsgComposer(t *testing.T) {
 		},
 	}
 	prompt, msg, image = c.MsgComposer(msgs)
-	t.Log(prompt)
-	t.Log(msg)
+	t.Log("Test 3")
+	t.Log("Prompt: ", prompt)
+	t.Log("Msg: ", msg)
 
 	msgs = []binglib.Message{
 		{
@@ -214,8 +217,9 @@ func TestMsgComposer(t *testing.T) {
 		},
 	}
 	prompt, msg, image = c.MsgComposer(msgs)
-	t.Log(prompt)
-	t.Log(msg)
+	t.Log("Test 4")
+	t.Log("Prompt: ", prompt)
+	t.Log("Msg: ", msg)
 
 	msgs = []binglib.Message{
 		{
@@ -237,9 +241,10 @@ func TestMsgComposer(t *testing.T) {
 		},
 	}
 	prompt, msg, image = c.MsgComposer(msgs)
-	t.Log(prompt)
-	t.Log(msg)
-	t.Log(image)
+	t.Log("Test 5")
+	t.Log("Prompt: ", prompt)
+	t.Log("Msg: ", msg)
+	t.Log("Image: ", image)
 
 	msgs = []binglib.Message{
 		{
@@ -269,14 +274,16 @@ func TestMsgComposer(t *testing.T) {
 		},
 	}
 	prompt, msg, image = c.MsgComposer(msgs)
-	t.Log(prompt)
-	t.Log(msg)
-	t.Log(image)
+	t.Log("Test 6")
+	t.Log("Prompt: ", prompt)
+	t.Log("Msg: ", msg)
+	t.Log("Image: ", image)
 
 	tmp := "[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"描述一下图片\"},{\"type\":\"image_url\",\"image_url\":{\"url\":\"https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg\"}}]}]"
 	json.Unmarshal([]byte(tmp), &msgs)
 	prompt, msg, image = c.MsgComposer(msgs)
-	t.Log(prompt)
-	t.Log(msg)
-	t.Log(image)
+	t.Log("Test 7")
+	t.Log("Prompt: ", prompt)
+	t.Log("Msg: ", msg)
+	t.Log("Image: ", image)
 }

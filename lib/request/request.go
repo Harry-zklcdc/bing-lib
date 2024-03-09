@@ -99,7 +99,7 @@ func (c *Client) Do() *Client {
 		return c
 	}
 	if len(res.Cookies()) > 1 {
-		c.Cookies = res.Cookies()
+		c.Cookies = append(c.Cookies, res.Cookies()...)
 	}
 	defer res.Body.Close()
 	c.Result.Status = res.StatusCode

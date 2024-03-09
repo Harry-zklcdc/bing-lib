@@ -191,13 +191,13 @@ func (chat *Chat) MsgComposer(msgs []Message) (prompt string, msg string, image 
 				for _, v := range t.Content.([]interface{}) {
 					value := v.(map[string]interface{})
 					if strings.ToLower(value["type"].(string)) == "text" {
-						prompt += value["text"].(string)
+						prompt = value["text"].(string)
 					}
 				}
 			case []ContentPart:
 				for _, v := range t.Content.([]ContentPart) {
 					if strings.ToLower(v.Type) == "text" {
-						prompt += v.Text
+						prompt = v.Text
 					}
 				}
 			default:

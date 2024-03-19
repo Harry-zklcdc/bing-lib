@@ -470,7 +470,7 @@ func (chat *Chat) requestMessagePayloadHandler(msg string, msgId string, imageUr
 			"userIpAddress":    chat.GetXFF(),
 			"locale":           "zh-CN",
 			"market":           "en-US",
-			"region":           "US",
+			"region":           "CN",
 			"location":         "lat:47.639557;long:-122.128159;re=1000m;",
 			"locationHints": []any{
 				map[string]any{
@@ -478,7 +478,9 @@ func (chat *Chat) requestMessagePayloadHandler(msg string, msgId string, imageUr
 					"state":             "California",
 					"city":              "Los Angeles",
 					"timezoneoffset":    8,
+					"dma":               819,
 					"countryConfidence": 8,
+					"cityConfidence":    5,
 					"Center": map[string]any{
 						"Latitude":  78.4156,
 						"Longitude": -101.4458,
@@ -500,7 +502,7 @@ func (chat *Chat) requestMessagePayloadHandler(msg string, msgId string, imageUr
 		"userIpAddress": chat.GetXFF(),
 		"locale":        "zh-CN",
 		"market":        "en-US",
-		"region":        "US",
+		"region":        "CN",
 		"location":      "lat:47.639557;long:-122.128159;re=1000m;",
 		"locationHints": []any{
 			map[string]any{
@@ -508,7 +510,9 @@ func (chat *Chat) requestMessagePayloadHandler(msg string, msgId string, imageUr
 				"state":             "California",
 				"city":              "Los Angeles",
 				"timezoneoffset":    8,
+				"dma":               819,
 				"countryConfidence": 8,
+				"cityConfidence":    5,
 				"Center": map[string]any{
 					"Latitude":  78.4156,
 					"Longitude": -101.4458,

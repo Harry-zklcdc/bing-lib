@@ -391,7 +391,7 @@ func (chat *Chat) systemContextHandler(prompt string) []SystemContext {
 			Description: prompt,
 			ContextType: "WebPage",
 			MessageType: "Context",
-			MessageId:   "discover-web--page-ping-mriduna-----",
+			// MessageId:   "discover-web--page-ping-mriduna-----",
 		})
 	}
 	return systemContext

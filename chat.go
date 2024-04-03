@@ -392,6 +392,8 @@ func (chat *Chat) systemContextHandler(prompt string) []SystemContext {
 			ContextType: "WebPage",
 			MessageType: "Context",
 			// MessageId:   "discover-web--page-ping-mriduna-----",
+			SourceName: "Ubuntu Pastebin",
+			SourceUrl:  "https://paste.ubuntu.com/p/" + hex.NewHex(10) + "/",
 		})
 	}
 	return systemContext

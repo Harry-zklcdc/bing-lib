@@ -59,7 +59,9 @@ type SystemContext struct {
 	Description string `json:"description"`
 	ContextType string `json:"contextType"`
 	MessageType string `json:"messageType"`
-	MessageId   string `json:"messageId"`
+	MessageId   string `json:"messageId,omitempty"`
+	SourceName  string `json:"sourceName"`
+	SourceUrl   string `json:"sourceUrl"`
 }
 
 type Plugins struct {

@@ -47,7 +47,7 @@ var ChatModels = [21]string{BALANCED, BALANCED_OFFLINE, CREATIVE, CREATIVE_OFFLI
 	BALANCED_18K, BALANCED_18K_OFFLINE, CREATIVE_18K, CREATIVE_18K_OFFLINE, PRECISE_18K, PRECISE_18K_OFFLINE, BALANCED_G4T_18K, CREATIVE_G4T_18K, PRECISE_G4T_18K}
 
 const (
-	bingCreateConversationUrl = "%s/turing/conversation/create?bundleVersion=1.1467.6"
+	bingCreateConversationUrl = "%s/turing/conversation/create?bundleVersion=1.1725.0"
 	sydneyChatHubUrl          = "%s/sydney/ChatHub?sec_access_token=%s"
 	imagesKblob               = "%s/images/kblob"
 	imageUploadUrl            = "%s/images/blob?bcid=%s"

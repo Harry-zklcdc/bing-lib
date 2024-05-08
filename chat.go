@@ -737,6 +737,10 @@ func (chat *Chat) chatHandler(prompt, msg string, c chan string, image ...string
 						text += "\n[^" + strconv.Itoa(i+1) + "^]: [" + v.ProviderDisplayName + "](" + v.SeeMoreUrl + ")"
 					}
 				}
+				err := ws.WriteMessage(websocket.TextMessage, []byte("{\"type\":7}"+spilt))
+				if err != nil {
+					break
+				}
 				break
 			}
 		} else if resp.Type == 1 {

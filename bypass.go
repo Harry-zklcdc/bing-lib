@@ -8,7 +8,7 @@ import (
 	"github.com/Harry-zklcdc/bing-lib/lib/request"
 )
 
-func Bypass(bypassServer, cookie, iframeid, IG, convId, rid, T string) (passResp PassResponseStruct, status int, err error) {
+func Bypass(bypassServer, cookie, iframeid, IG, convId, rid, T, Host string) (passResp PassResponseStruct, status int, err error) {
 	passRequest := passRequestStruct{
 		Cookies:  cookie,
 		Iframeid: iframeid,
@@ -16,6 +16,7 @@ func Bypass(bypassServer, cookie, iframeid, IG, convId, rid, T string) (passResp
 		ConvId:   convId,
 		RId:      rid,
 		T:        T,
+		Host:     Host,
 	}
 	passResq, err := json.Marshal(passRequest)
 	if err != nil {

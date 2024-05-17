@@ -702,7 +702,7 @@ func (chat *Chat) chatHandler(prompt, msg string, c chan string, image ...string
 						c <- "Bypass Fail!"
 						break
 					}
-					r, status, err := Bypass(chat.GetBypassServer(), chat.GetCookies(), "local-gen-"+hex.NewUUID(), IG, chat.GetChatHub().GetConversationId(), msgId, T)
+					r, status, err := Bypass(chat.GetBypassServer(), chat.GetCookies(), "local-gen-"+hex.NewUUID(), IG, chat.GetChatHub().GetConversationId(), msgId, T, "")
 					if err != nil || status != http.StatusOK {
 						c <- "Bypass Fail!"
 						break

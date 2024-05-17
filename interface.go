@@ -107,6 +107,7 @@ type passRequestStruct struct {
 	ConvId   string `json:"convId,omitempty"`
 	RId      string `json:"rid,omitempty"`
 	T        string `json:"T"`
+	Host     string `json:"host,omitempty"`
 }
 
 type PassResponseStruct struct {

@@ -1,4 +1,4 @@
-//go:build !js
+//go:build js && wasm
 
 package request
 
@@ -10,6 +10,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/Harry-zklcdc/bing-lib/lib/net_http"
 )
 
 // Client 		==> 客户端实例
@@ -77,25 +79,11 @@ func (c *Client) Do() *Client {
 		request.Header.Set(k, v)
 	}
 
-	var client *http.Client
-	if c.Request.ProxyUrl == (url.URL{}) {
-		client = &http.Client{
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			},
-		}
-	} else {
-		client = &http.Client{
-			Transport: &http.Transport{Proxy: http.ProxyURL(&c.Request.ProxyUrl)},
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			},
-		}
-	}
-	if c.Request.Timeout != 0 {
-		client.Timeout = c.Request.Timeout
-	}
-	res, err := client.Do(request)
+	client := &net_http.Transport{}
+	// if c.Request.Timeout != 0 {
+	// 	client.Timeout = c.Request.Timeout
+	// }
+	res, err := client.RoundTrip(request)
 	if err != nil {
 		fmt.Println(err)
 		return c
